@@ -119,7 +119,7 @@ Criadas automaticamente na primeira subida (se ainda não existirem). Troque as 
 
 | Perfil | Uso |
 |---|---|
-| ADMIN | Administração e abertura de chamados |
+| ADMIN | Administração, abertura e remoção de chamados |
 | SABESP | Atendimento operacional |
 | PREFEITURA | Dashboard e consulta |
 | CIDADAO | Abertura e acompanhamento dos próprios chamados |
@@ -164,11 +164,13 @@ A aplicação escuta HTTP no bind configurado. Para internet, coloque um proxy r
 ## O que o sistema entrega
 
 - Cadastro com verificação por e-mail  
-- Abertura de chamado (CEP com fallback, fotos, tipo de ocorrência; **Descreva o tipo** só em **Outros**)  
+- Abertura de chamado: CEP com fallback, **Estado** (UF) + cidades via IBGE, fotos, tipo de ocorrência (**Descreva o tipo** só em **Outros**), descrição com editor **WYSIWYG** (HTML sanitizado)  
 - Consulta pública por protocolo  
-- Fila operacional, status com histórico, mensagens e anexos  
+- Fila operacional, status com histórico, mensagens (chat) e anexos  
 - Dashboard, admin de usuários/tipos e auditoria  
-- RBAC, reCAPTCHA, rate limit, backup automático do PostgreSQL  
+- **Minha conta**: tema claro/escuro, cores de menu/elementos/fonte (salvas por usuário), redefinir padrão  
+- Menu lateral recolhível (desktop: só ícones; mobile: hamburger + favicon)  
+- RBAC, reCAPTCHA, rate limit na consulta pública, backup automático do PostgreSQL  
 - **PWA**: instalável (Android/desktop/iOS “Adicionar à Tela de Início”), service worker, cache de estáticos e página offline  
 
 > PWA exige HTTPS (ou `localhost`). Em produção atrás de Cloudflare/túnel isso já está coberto.
@@ -182,9 +184,11 @@ A aplicação escuta HTTP no bind configurado. Para internet, coloque um proxy r
 | **CIDADAO** | Abre e acompanha os próprios chamados |
 | **SABESP** | Atende a fila, altera status, mensagens internas |
 | **PREFEITURA** | Monitora indicadores e consulta a base |
-| **ADMIN** | Administra o sistema e pode abrir chamados |
+| **ADMIN** | Administra o sistema, abre e **remove** chamados |
 
-Authorities (`CHAMADO_*`, `MENSAGEM_*`, `DASHBOARD_*`, …) entram na sessão no login. Após mudar no banco, faça logout/login.
+Authorities relevantes: `CHAMADO_CRIAR`, `CHAMADO_VISUALIZAR_*`, `CHAMADO_ALTERAR_STATUS`, `CHAMADO_REMOVER`, `MENSAGEM_*`, `DASHBOARD_*`, `USUARIO_GERENCIAR`, …  
+
+Entram na sessão no login. Depois de alterar authorities no banco (ou de uma migração que as inclua), faça **logout/login**.
 
 ---
 
@@ -213,7 +217,10 @@ flowchart LR
 - Thymeleaf server-rendered  
 - `open-in-view=false` (DTOs na view)  
 - Flyway versionado — não edite migrações já aplicadas  
+- Preferências de aparência por usuário (colunas em `usuario`)  
+- Localidades: lista fixa de UFs + municípios via API IBGE (cache)  
 - Postgres isolado na rede Compose  
+- Estáticos PWA: `manifest.webmanifest`, `sw.js`, `offline.html`, `/icons/*`  
 
 ---
 
@@ -268,7 +275,10 @@ No Windows (PowerShell): use `"%CD%"` no lugar de `"$PWD"`.
 | Falha Flyway | credenciais `POSTGRES_*` · não altere checksum de migração aplicada |
 | reCAPTCHA | chaves e domínio autorizados · ou `RECAPTCHA_ENABLED=false` em `dev` |
 | E-mail | `SMTP_*` e conectividade |
-| UI antiga após rebuild | `build --no-cache` + hard refresh |
+| UI antiga após rebuild | `build --no-cache` + hard refresh (e purge de cache no proxy, se houver) |
+| Botão “Remover chamado” ausente | perfil ADMIN + authority `CHAMADO_REMOVER` · logout/login |
+| Cidades não carregam | conectividade da app com `servicodados.ibge.gov.br` · logs da app |
+| PWA não instala | HTTPS (ou localhost) · `manifest.webmanifest` e `sw.js` públicos |
 
 ---
 
@@ -277,10 +287,10 @@ No Windows (PowerShell): use `"%CD%"` no lugar de `"$PWD"`.
 ```text
 src/main/java/.../santoschamados/
   auth/  usuario/  perfil/  chamado/  mensagem/  anexo/
-  endereco/  dashboard/  auditoria/  catalogo/
+  endereco/ (cep + localidade)  dashboard/  auditoria/  catalogo/
   infrastructure/  shared/
 src/main/resources/
-  db/migration/  templates/  static/  application*.yml
+  db/migration/  templates/  static/ (css, js, icons, PWA)  application*.yml
 docker/backup/
 scripts/
 compose.yaml
