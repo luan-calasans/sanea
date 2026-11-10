@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Consulta pública — Sanea</title>
+    <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
+    <th:block th:replace="~{fragments/fonts :: links}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:if="${recaptchaEnabled}" src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<div class="public-shell">
+    <header class="public-shell__top">
+        <a class="public-shell__brand" th:href="@{/consulta}" aria-label="Sanea">
+            <img th:src="@{/img/logo.webp}" alt="Sanea" width="40" height="40">
+            <span>
+                <strong>Sanea</strong>
+            </span>
+        </a>
+        <nav class="public-shell__nav">
+            <a th:href="@{/login}">Entrar</a>
+            <a class="btn btn-secondary btn-sm" th:href="@{/cadastro}">Cadastre-se</a>
+        </nav>
+    </header>
+
+    <main class="public-shell__main">
+        <section class="consulta">
+            <div class="consulta__intro">
+                <p class="consulta__eyebrow">Acompanhamento público</p>
+                <h1>Consulta de protocolo</h1>
+                <p>Informe o protocolo no formato <strong>SAN-AAAA-XXXXXXXX</strong> para ver o andamento, sem exibir dados pessoais.</p>
+            </div>
+
+            <section class="consulta__search surface">
+                <form method="post" th:action="@{/consulta}" class="consulta__form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="field consulta__protocolo">
+                        <label for="protocolo">Protocolo</label>
+                        <input id="protocolo" name="protocolo" type="text"
+                               th:value="${protocolo}"
+                               placeholder="SAN-2026-K7QF9M2D"
+                               required autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="consulta__actions">
+                        <button class="btn btn-primary" type="submit">Consultar</button>
+                    </div>
+                    <div class="field consulta__captcha" th:if="${recaptchaEnabled}">
+                        <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}"></div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="consulta__empty surface" th:if="${naoEncontrado}">
+                <div class="consulta__empty-icon" aria-hidden="true">?</div>
+                <h2>Protocolo não encontrado</h2>
+                <p>Verifique o código informado. A resposta é a mesma para protocolos inválidos ou inexistentes.</p>
+            </section>
+
+            <section class="consulta__result" th:if="${chamado != null}">
+                <header class="consulta__result-head surface">
+                    <div class="consulta__result-main">
+                        <p class="consulta__eyebrow">Resultado</p>
+                        <h2 th:text="${chamado.protocolo}">SAN-2026-XXXX</h2>
+                        <p class="consulta__tipo" th:text="${chamado.tipoNome}">Tipo</p>
+                    </div>
+                    <span class="badge" th:classappend="'badge-' + ${chamado.status.name()}" th:text="${chamado.statusRotulo}">Status</span>
+                </header>
+
+                <div class="consulta__meta">
+                    <div class="consulta__meta-item">
+                        <span>Aberto em</span>
+                        <strong th:text="${#temporals.format(chamado.abertoEm, 'dd/MM/yyyy HH:mm', zoneId)}">01/01/2026</strong>
+                    </div>
+                    <div class="consulta__meta-item">
+                        <span>Anexos</span>
+                        <strong th:text="${chamado.quantidadeAnexos}">0</strong>
+                    </div>
+                    <div class="consulta__meta-item">
+                        <span>Status atual</span>
+                        <strong th:text="${chamado.statusRotulo}">Aberto</strong>
+                    </div>
+                </div>
+
+                <div class="consulta__panels">
+                    <article class="surface stack consulta__panel">
+                        <h3>Histórico público</h3>
+                        <ol class="consulta-timeline" th:if="${!#lists.isEmpty(chamado.historico)}">
+                            <li th:each="h, stat : ${chamado.historico}" th:classappend="${stat.last} ? 'is-current'">
+                                <div class="consulta-timeline__dot" aria-hidden="true"></div>
+                                <div class="consulta-timeline__body">
+                                    <strong th:text="${h.statusNovo.rotulo}">Status</strong>
+                                    <time th:text="${#temporals.format(h.criadoEm, 'dd/MM/yyyy HH:mm', zoneId)}">data</time>
+                                    <p th:if="${h.observacao != null}" th:text="${h.observacao}"></p>
+                                </div>
+                            </li>
+                        </ol>
+                        <div class="empty-state" th:if="${#lists.isEmpty(chamado.historico)}">Sem histórico público.</div>
+                    </article>
+
+                    <article class="surface stack consulta__panel">
+                        <h3>Mensagens públicas</h3>
+                        <div class="empty-state" th:if="${#lists.isEmpty(chamado.mensagensPublicas)}">
+                            Nenhuma mensagem pública até o momento.
+                        </div>
+                        <div class="consulta__messages" th:if="${!#lists.isEmpty(chamado.mensagensPublicas)}">
+                            <article class="consulta-message" th:each="m : ${chamado.mensagensPublicas}">
+                                <div class="consulta-message__meta">
+                                    <span th:text="${m.perfilAutor}">Perfil</span>
+                                    <time th:text="${#temporals.format(m.criadoEm, 'dd/MM/yyyy HH:mm', zoneId)}">data</time>
+                                </div>
+                                <p th:text="${m.corpo}">Mensagem</p>
+                            </article>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </section>
+    </main>
+</div>
+</body>
+</html>

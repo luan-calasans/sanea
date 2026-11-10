@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::section})}">
+<body>
+<section>
+    <div class="page-header">
+        <div>
+            <h1>Auditoria</h1>
+            <p>Registros protegidos contra alteração pela interface.</p>
+        </div>
+    </div>
+    <section class="surface stack">
+        <form method="get" class="filter-bar">
+            <div class="field">
+                <label for="tipo">Tipo</label>
+                <select id="tipo" name="tipo">
+                    <option value="">Todos</option>
+                    <option th:each="t : ${tiposEvento}" th:value="${t}" th:text="${t}" th:selected="${tipo == t}"></option>
+                </select>
+            </div>
+            <div class="filter-bar__actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+            </div>
+        </form>
+        <div class="table-wrap table-wrap--flush">
+            <table>
+                <thead><tr><th>Data</th><th>Evento</th><th>Resultado</th><th>Recurso</th><th>Detalhes</th></tr></thead>
+                <tbody>
+                <tr th:each="a : ${page.content}">
+                    <td data-label="Data" th:text="${#temporals.format(a.criadoEm.atZone(zoneId), 'dd/MM/yyyy HH:mm')}"></td>
+                    <td data-label="Evento" th:text="${a.tipoEvento}"></td>
+                    <td data-label="Resultado" th:text="${a.resultado}"></td>
+                    <td data-label="Recurso" th:text="${(a.recursoTipo ?: '') + ' ' + (a.recursoId ?: '')}"></td>
+                    <td data-label="Detalhes" th:text="${a.detalhes}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
+</body>
+</html>

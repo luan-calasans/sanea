@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::section})}">
+<body>
+<section>
+    <div class="page-header">
+        <div>
+            <h1>Chamados</h1>
+            <p>Filtre e acompanhe ocorrências registradas.</p>
+        </div>
+        <a class="btn btn-primary" sec:authorize="hasAuthority('CHAMADO_CRIAR')" th:href="@{/chamados/novo}">Abrir chamado</a>
+    </div>
+
+    <section class="surface">
+        <form method="get" th:action="@{/chamados}" class="form-grid-3">
+            <div class="field">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="">Todos</option>
+                    <option th:each="s : ${statusList}" th:value="${s}" th:text="${s.rotulo}" th:selected="${status == s}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="tipoId">Tipo</label>
+                <select id="tipoId" name="tipoId">
+                    <option value="">Todos</option>
+                    <option th:each="t : ${tipos}" th:value="${t.id}" th:text="${t.nome}" th:selected="${tipoId == t.id}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="bairro">Bairro</label>
+                <input id="bairro" name="bairro" type="text" th:value="${bairro}">
+            </div>
+            <div class="field">
+                <label for="cidade">Cidade</label>
+                <input id="cidade" name="cidade" type="text" th:value="${cidade}">
+            </div>
+            <div class="field">
+                <label for="desde">De</label>
+                <input id="desde" name="desde" type="date" th:value="${desde}">
+            </div>
+            <div class="field">
+                <label for="ate">Até</label>
+                <input id="ate" name="ate" type="date" th:value="${ate}">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-secondary" th:href="@{/chamados}">Limpar</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="surface">
+        <p class="muted" th:text="'Total: ' + ${page.totalElements}">Total</p>
+        <div class="empty-state" th:if="${page.totalElements == 0}">Nenhum chamado encontrado para os filtros informados.</div>
+        <div class="table-wrap" th:if="${page.totalElements > 0}">
+            <table>
+                <thead>
+                <tr>
+                    <th>Protocolo</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Bairro</th>
+                    <th>Aberto em</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${page.content}">
+                    <td data-label="Protocolo" th:text="${c.protocolo}"></td>
+                    <td data-label="Tipo" th:text="${c.tipoNome}"></td>
+                    <td data-label="Status"><span class="badge" th:classappend="'badge-' + ${c.status.name()}" th:text="${c.statusRotulo}"></span></td>
+                    <td data-label="Bairro" th:text="${c.bairro}"></td>
+                    <td data-label="Aberto em" th:text="${c.abertoEmFormatado}"></td>
+                    <td data-label="Ações"><a th:href="@{/chamados/{id}(id=${c.id})}">Abrir</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <nav class="pagination" th:if="${page.totalPages > 1}" aria-label="Paginação">
+            <a th:if="${page.hasPrevious()}"
+               th:href="@{/chamados(page=${page.number - 1}, status=${status}, tipoId=${tipoId}, bairro=${bairro}, cidade=${cidade}, desde=${desde}, ate=${ate})}">Anterior</a>
+            <span class="current" th:text="${page.number + 1}"></span>
+            <a th:if="${page.hasNext()}"
+               th:href="@{/chamados(page=${page.number + 1}, status=${status}, tipoId=${tipoId}, bairro=${bairro}, cidade=${cidade}, desde=${desde}, ate=${ate})}">Próxima</a>
+        </nav>
+    </section>
+</section>
+</body>
+</html>

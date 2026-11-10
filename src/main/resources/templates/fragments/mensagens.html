@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="thread">
+    <article class="message" th:each="m : ${mensagens}" th:classappend="${m.interna} ? ' interna'">
+        <div class="message-meta">
+            <span th:text="${m.autorNome}"></span>
+            <time th:text="${m.criadoEmFormatado}"></time>
+        </div>
+        <div th:text="${m.corpo}"></div>
+    </article>
+</div>
+</body>
+</html>

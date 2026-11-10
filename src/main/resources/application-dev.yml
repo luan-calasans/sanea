@@ -1,0 +1,32 @@
+spring:
+  thymeleaf:
+    cache: false
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false
+
+app:
+  env: development
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  recaptcha:
+    enabled: ${RECAPTCHA_ENABLED:false}
+
+logging:
+  level:
+    br.com.luancalasans.santoschamados: DEBUG

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Entrar - Sanea</title>
+    <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
+    <th:block th:replace="~{fragments/fonts :: links}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:if="${recaptchaEnabled}" src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <img th:src="@{/img/logo.webp}" alt="Sanea" width="56" height="56">
+        </div>
+        <h1>Entrar</h1>
+        <p>Use seu e-mail institucional ou de cidadão cadastrado.</p>
+
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}" class="alert alert-error" th:text="${erro}"></div>
+
+        <form th:action="@{/login}" method="post" class="stack">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="field">
+                <label for="email">E-mail</label>
+                <input id="email" name="email" type="email" autocomplete="username" required>
+            </div>
+            <div class="field">
+                <label for="senha">Senha</label>
+                <input id="senha" name="senha" type="password" autocomplete="current-password" required>
+            </div>
+            <div class="field auth-recaptcha" th:if="${recaptchaEnabled}">
+                <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}"></div>
+            </div>
+            <button class="btn btn-primary" type="submit">Entrar</button>
+        </form>
+        <div class="auth-links">
+            <p>Cidadão sem conta? <a th:href="@{/cadastro}">Cadastre-se</a></p>
+            <p><a th:href="@{/consulta}">Consultar protocolo</a></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

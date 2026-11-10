@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::section})}">
+<body>
+<section class="surface empty-state">
+    <h1 th:text="${titulo}">Acesso negado</h1>
+    <p th:text="${mensagem}">Sem permissão.</p>
+    <a class="btn btn-primary" th:href="@{/inicio}">Voltar</a>
+</section>
+</body>
+</html>

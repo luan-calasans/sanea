@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::section})}">
+<body>
+<section class="detail-page">
+    <div class="page-header">
+        <div>
+            <h1 th:text="${chamado.protocolo}">Protocolo</h1>
+            <p th:text="${chamado.tipoExibicao}">Tipo</p>
+        </div>
+        <span class="badge" th:classappend="${chamado.statusBadgeClass}" th:text="${chamado.statusRotulo}">Status</span>
+    </div>
+
+    <div class="grid-2 detail-grid">
+        <div class="stack detail-grid__col">
+            <article class="surface stack">
+                <h2>Detalhes</h2>
+                <p><strong>Aberto em:</strong>
+                    <span th:text="${chamado.abertoEmFormatado}"></span>
+                </p>
+                <p th:if="${chamado.dataOcorrenciaFormatada != null}">
+                    <strong>Data da ocorrência:</strong>
+                    <span th:text="${chamado.dataOcorrenciaFormatada}"></span>
+                </p>
+                <p>
+                    <strong>Endereço:</strong>
+                    <span th:text="${chamado.logradouro}"></span>
+                    <span th:if="${chamado.numero != null}" th:text="', ' + ${chamado.numero}"></span>
+                    <span th:if="${chamado.complemento != null}" th:text="' - ' + ${chamado.complemento}"></span><br>
+                    <span th:text="${chamado.bairro} + ' · ' + ${chamado.cidade} + '/' + ${chamado.uf} + ' · CEP ' + ${chamado.cep}"></span>
+                    <span class="muted" th:text="${chamado.enderecoVerificadoRotulo}"></span>
+                </p>
+                <div>
+                    <p><strong>Descrição</strong></p>
+                    <p th:text="${chamado.descricao}"></p>
+                </div>
+            </article>
+
+            <article th:if="${podeAlterarStatus and chamado.temProximosStatus}" class="surface stack">
+                <h2>Alterar status</h2>
+                <form th:action="@{/chamados/{id}/status(id=${chamado.id})}" method="post" class="stack">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="versao" th:value="${chamado.versao}">
+                    <div class="field">
+                        <label for="novoStatus">Novo status</label>
+                        <select id="novoStatus" name="novoStatus" required>
+                            <option th:each="s : ${chamado.proximosStatus}" th:value="${s.valor}" th:text="${s.rotulo}"></option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="observacao">Observação</label>
+                        <textarea id="observacao" name="observacao" maxlength="1000"></textarea>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" type="submit">Salvar status</button>
+                    </div>
+                </form>
+            </article>
+        </div>
+
+        <div class="stack detail-grid__col">
+            <article class="surface stack">
+                <h2>Histórico</h2>
+                <ul class="timeline">
+                    <li th:each="h : ${chamado.historicos}">
+                        <strong th:text="${h.statusNovoRotulo}"></strong>
+                        <div class="muted" th:text="${h.criadoEmFormatado}"></div>
+                        <div th:if="${h.observacao != null}" th:text="${h.observacao}"></div>
+                    </li>
+                </ul>
+            </article>
+
+            <article class="surface stack">
+                <h2>Anexos</h2>
+                <div class="empty-state" th:if="${#lists.isEmpty(chamado.anexos)}">Nenhum anexo.</div>
+                <ul class="attachment-list" th:if="${!#lists.isEmpty(chamado.anexos)}">
+                    <li th:each="a : ${chamado.anexos}">
+                        <span th:text="'Arquivo #' + ${a.id} + ' (' + ${a.contentType} + ')'"></span>
+                        <a th:if="${podeBaixarAnexo}" th:href="@{/anexos/{id}/download(id=${a.id})}">Baixar</a>
+                    </li>
+                </ul>
+            </article>
+        </div>
+    </div>
+
+    <section class="surface stack detail-messages" id="mensagens">
+        <h2>Chat</h2>
+        <div id="mensagem-thread" class="thread"
+             th:attr="data-chamado-id=${chamado.id}, data-latest=${chamado.ultimaMensagemEm}">
+            <div class="empty-state" th:if="${#lists.isEmpty(chamado.mensagens)}">Nenhuma mensagem ainda.</div>
+            <article class="message" th:each="m : ${chamado.mensagens}" th:classappend="${m.interna} ? ' interna'">
+                <div class="message-meta">
+                    <span th:text="${m.autorNome}"></span>
+                    <time th:text="${m.criadoEmFormatado}"></time>
+                </div>
+                <div th:text="${m.corpo}"></div>
+                <span class="badge" th:if="${m.interna}">Interna</span>
+            </article>
+        </div>
+
+        <form th:if="${podePublicar}" th:action="@{/chamados/{id}/mensagens(id=${chamado.id})}" method="post" class="stack">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="field">
+                <label for="corpo">Nova mensagem</label>
+                <textarea id="corpo" name="corpo" required maxlength="4000"></textarea>
+            </div>
+            <div class="field" th:if="${podeMensagemInterna}">
+                <label for="visibilidade">Visibilidade</label>
+                <select id="visibilidade" name="visibilidade">
+                    <option value="PUBLICA">Pública</option>
+                    <option value="INTERNA">Interna</option>
+                </select>
+            </div>
+            <input th:unless="${podeMensagemInterna}" type="hidden" name="visibilidade" value="PUBLICA">
+            <div class="actions">
+                <button class="btn btn-primary" type="submit">Enviar</button>
+            </div>
+        </form>
+    </section>
+</section>
+</body>
+</html>

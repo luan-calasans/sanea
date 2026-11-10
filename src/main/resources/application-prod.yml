@@ -1,0 +1,38 @@
+spring:
+  thymeleaf:
+    cache: true
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: lax
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  env: production
+  recaptcha:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+    br.com.luancalasans.santoschamados: INFO
+    org.hibernate.SQL: WARN

@@ -1,0 +1,163 @@
+spring:
+  application:
+    name: ${APP_NAME:santos-chamados}
+  profiles:
+    default: dev
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/santos_chamados}
+    username: ${SPRING_DATASOURCE_USERNAME:santos_chamados}
+    password: ${SPRING_DATASOURCE_PASSWORD:santos_chamados}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      pool-name: santos-chamados-pool
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        timezone:
+          default_storage: NORMALIZE
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+  servlet:
+    multipart:
+      max-file-size: ${ATTACHMENT_MAX_FILE_SIZE_MB:8}MB
+      max-request-size: 30MB
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: ${SMTP_STARTTLS:true}
+            required: ${SMTP_STARTTLS:true}
+          ssl:
+            enable: ${SMTP_SSL:false}
+  thymeleaf:
+    cache: false
+  cache:
+    type: caffeine
+  jackson:
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: ${SERVER_FORWARD_HEADERS_STRATEGY:framework}
+  servlet:
+    session:
+      timeout: ${SERVER_SERVLET_SESSION_TIMEOUT:30m}
+      cookie:
+        name: SANTOS_SESSION
+        http-only: true
+        same-site: lax
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+  info:
+    env:
+      enabled: true
+
+app:
+  name: ${APP_NAME:santos-chamados}
+  env: ${APP_ENV:development}
+  domain: ${APP_DOMAIN:localhost}
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  trusted-proxies: ${APP_TRUSTED_PROXIES:127.0.0.1,::1}
+  atendimento:
+    cidade: ${ATENDIMENTO_CIDADE:Santos}
+    uf: ${ATENDIMENTO_UF:SP}
+  mail:
+    from: ${SMTP_FROM:noreply@localhost}
+  recaptcha:
+    enabled: ${RECAPTCHA_ENABLED:true}
+    site-key: ${RECAPTCHA_SITE_KEY:}
+    secret-key: ${RECAPTCHA_SECRET_KEY:}
+    verify-url: https://www.google.com/recaptcha/api/siteverify
+  attachment:
+    max-file-size-mb: ${ATTACHMENT_MAX_FILE_SIZE_MB:8}
+    max-files: ${ATTACHMENT_MAX_FILES:3}
+    storage-path: ${ATTACHMENT_STORAGE_PATH:./data/anexos}
+    max-dimension: ${ATTACHMENT_MAX_DIMENSION:1920}
+  rate-limit:
+    public-protocol-limit: ${PUBLIC_PROTOCOL_RATE_LIMIT:10}
+    public-protocol-window-seconds: ${PUBLIC_PROTOCOL_RATE_WINDOW_SECONDS:60}
+  login:
+    max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
+    lock-minutes: ${LOGIN_LOCK_MINUTES:15}
+  initial-users:
+    cidadao:
+      email: ${INITIAL_CIDADAO_EMAIL:}
+      password: ${INITIAL_CIDADAO_PASSWORD:}
+      nome: ${INITIAL_CIDADAO_NOME:Cidadão Inicial}
+    sabesp:
+      email: ${INITIAL_SABESP_EMAIL:}
+      password: ${INITIAL_SABESP_PASSWORD:}
+      nome: ${INITIAL_SABESP_NOME:Operador Sabesp}
+    prefeitura:
+      email: ${INITIAL_PREFEITURA_EMAIL:}
+      password: ${INITIAL_PREFEITURA_PASSWORD:}
+      nome: ${INITIAL_PREFEITURA_NOME:Analista Prefeitura}
+    admin:
+      email: ${INITIAL_ADMIN_EMAIL:}
+      password: ${INITIAL_ADMIN_PASSWORD:}
+      nome: ${INITIAL_ADMIN_NOME:Administrador}
+  cep:
+    timeout-ms: 2500
+    cache-days: 30
+
+logging:
+  level:
+    root: INFO
+    br.com.luancalasans.santoschamados: INFO
+    org.springframework.security: WARN
+  file:
+    name: logs/santos-chamados.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 14
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      viaCep:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 2
+      openCep:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 2
+      brasilApi:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 2

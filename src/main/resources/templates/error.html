@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Erro - Sanea</title>
+    <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
+    <th:block th:replace="~{fragments/fonts :: links}"></th:block>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="auth-shell">
+    <section class="auth-card empty-state">
+        <h1 th:text="${status} ?: 'Erro'">Erro</h1>
+        <p th:text="${message} ?: 'Ocorreu um erro inesperado. Tente novamente.'">Erro inesperado.</p>
+        <div class="actions" style="justify-content:center;">
+            <a class="btn btn-primary" th:href="@{/inicio}">Voltar</a>
+            <a class="btn btn-secondary" th:href="@{/consulta}">Consulta pública</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

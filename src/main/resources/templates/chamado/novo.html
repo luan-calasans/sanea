@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::section})}">
+<body>
+<section>
+    <div class="page-header">
+        <div>
+            <h1>Abrir chamado</h1>
+            <p>Registre uma ocorrência de esgoto. A abertura funciona mesmo se a consulta de CEP estiver indisponível.</p>
+        </div>
+    </div>
+
+    <form class="surface stack" th:action="@{/chamados}" th:object="${form}" method="post" enctype="multipart/form-data" id="form-chamado">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <input type="hidden" th:field="*{enderecoVerificado}" id="enderecoVerificado">
+
+        <div class="grid-3">
+            <div class="field">
+                <label for="cep">CEP</label>
+                <input id="cep" th:field="*{cep}" type="text" inputmode="numeric" maxlength="9" required>
+                <span class="field-hint" id="cep-status">Informe o CEP para preencher o endereço.</span>
+            </div>
+            <div class="field">
+                <label for="tipoChamadoId">Tipo de ocorrência</label>
+                <select id="tipoChamadoId" th:field="*{tipoChamadoId}" required>
+                    <option value="">Selecione</option>
+                    <option th:each="t : ${tipos}"
+                            th:value="${t.id}"
+                            th:text="${t.nome}"
+                            th:attr="data-codigo=${t.codigo}"></option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="dataOcorrencia">Data da ocorrência (opcional)</label>
+                <input id="dataOcorrencia" th:field="*{dataOcorrencia}" type="date">
+            </div>
+        </div>
+
+        <div class="field" id="campo-tipo-outro" hidden>
+            <label for="tipoOutro">Descreva o tipo</label>
+            <input id="tipoOutro" th:field="*{tipoOutro}" type="text" maxlength="200"
+                   placeholder="Informe o tipo de ocorrência">
+            <span class="field-hint">Obrigatório ao selecionar Outros.</span>
+        </div>
+
+        <div class="grid-2">
+            <div class="field">
+                <label for="logradouro">Logradouro</label>
+                <input id="logradouro" th:field="*{logradouro}" type="text" required>
+            </div>
+            <div class="field">
+                <label for="numero">Número</label>
+                <input id="numero" th:field="*{numero}" type="text">
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="field">
+                <label for="complemento">Complemento</label>
+                <input id="complemento" th:field="*{complemento}" type="text">
+            </div>
+            <div class="field">
+                <label for="bairro">Bairro</label>
+                <input id="bairro" th:field="*{bairro}" type="text" required>
+            </div>
+            <div class="field">
+                <label for="cidade">Cidade</label>
+                <input id="cidade" th:field="*{cidade}" type="text" value="Santos" required>
+            </div>
+        </div>
+
+        <div class="field field--uf">
+            <label for="uf">UF</label>
+            <input id="uf" th:field="*{uf}" type="text" maxlength="2" value="SP" required>
+        </div>
+
+        <div class="field">
+            <label for="descricao">Descrição</label>
+            <textarea id="descricao" th:field="*{descricao}" required maxlength="4000"></textarea>
+        </div>
+
+        <div class="field">
+            <label for="fotos">Fotografias (até 3, JPEG/PNG)</label>
+            <input id="fotos" name="fotos" type="file" accept="image/jpeg,image/png,image/*" capture="environment" multiple>
+            <span class="field-hint">Máximo de 8 MB por arquivo. Metadados EXIF/GPS são removidos.</span>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Registrar chamado</button>
+            <a class="btn btn-secondary" th:href="@{/chamados}">Cancelar</a>
+        </div>
+    </form>
+</section>
+</body>
+</html>

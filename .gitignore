@@ -1,0 +1,48 @@
+# Build
+target/
+.tools/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties.bak
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+.factorypath
+bin/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets and local env
+.env
+.env.local
+.env.prod
+*.pem
+*.key
+secrets/
+
+# Runtime data
+data/
+logs/
+*.log
+anexos/
+backups/
+
+# Test
+.coverage
+test-output/
+
+# Docker overrides
+compose.override.yaml
+docker-compose.override.yml

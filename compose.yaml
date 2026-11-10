@@ -1,0 +1,151 @@
+name: santos-chamados
+
+services:
+  santos-chamados-db:
+    image: postgres:16.4-alpine
+    container_name: santos-chamados-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: ${TZ:-America/Sao_Paulo}
+      PGTZ: UTC
+    volumes:
+      - santos-chamados-postgres-data:/var/lib/postgresql/data
+    networks:
+      - santos-chamados-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    mem_limit: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  santos-chamados-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: santos-chamados:1.0.0
+    container_name: santos-chamados-app
+    restart: unless-stopped
+    depends_on:
+      santos-chamados-db:
+        condition: service_healthy
+    ports:
+      - "${APP_BIND_IP:-127.0.0.1}:${APP_PORT:-18473}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      TZ: ${TZ:-America/Sao_Paulo}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xms128m -Xmx512m}
+      APP_NAME: ${APP_NAME:-santos-chamados}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DOMAIN: ${APP_DOMAIN}
+      APP_BASE_URL: ${APP_BASE_URL}
+      APP_TRUSTED_PROXIES: ${APP_TRUSTED_PROXIES:-172.16.0.0/12,192.168.0.0/16,10.0.0.0/8}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${POSTGRES_HOST:-santos-chamados-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      RECAPTCHA_SITE_KEY: ${RECAPTCHA_SITE_KEY}
+      RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
+      RECAPTCHA_ENABLED: ${RECAPTCHA_ENABLED:-true}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_SSL: ${SMTP_SSL:-false}
+      INITIAL_CIDADAO_EMAIL: ${INITIAL_CIDADAO_EMAIL}
+      INITIAL_CIDADAO_PASSWORD: ${INITIAL_CIDADAO_PASSWORD}
+      INITIAL_CIDADAO_NOME: ${INITIAL_CIDADAO_NOME:-Cidadão Inicial}
+      INITIAL_SABESP_EMAIL: ${INITIAL_SABESP_EMAIL}
+      INITIAL_SABESP_PASSWORD: ${INITIAL_SABESP_PASSWORD}
+      INITIAL_SABESP_NOME: ${INITIAL_SABESP_NOME:-Operador Sabesp}
+      INITIAL_PREFEITURA_EMAIL: ${INITIAL_PREFEITURA_EMAIL}
+      INITIAL_PREFEITURA_PASSWORD: ${INITIAL_PREFEITURA_PASSWORD}
+      INITIAL_PREFEITURA_NOME: ${INITIAL_PREFEITURA_NOME:-Analista Prefeitura}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
+      INITIAL_ADMIN_NOME: ${INITIAL_ADMIN_NOME:-Administrador}
+      ATTACHMENT_MAX_FILE_SIZE_MB: ${ATTACHMENT_MAX_FILE_SIZE_MB:-8}
+      ATTACHMENT_MAX_FILES: ${ATTACHMENT_MAX_FILES:-3}
+      ATTACHMENT_STORAGE_PATH: ${ATTACHMENT_STORAGE_PATH:-/data/anexos}
+      ATTACHMENT_MAX_DIMENSION: ${ATTACHMENT_MAX_DIMENSION:-1920}
+      PUBLIC_PROTOCOL_RATE_LIMIT: ${PUBLIC_PROTOCOL_RATE_LIMIT:-10}
+      PUBLIC_PROTOCOL_RATE_WINDOW_SECONDS: ${PUBLIC_PROTOCOL_RATE_WINDOW_SECONDS:-60}
+      LOGIN_MAX_ATTEMPTS: ${LOGIN_MAX_ATTEMPTS:-5}
+      LOGIN_LOCK_MINUTES: ${LOGIN_LOCK_MINUTES:-15}
+      ATENDIMENTO_CIDADE: ${ATENDIMENTO_CIDADE:-Santos}
+      ATENDIMENTO_UF: ${ATENDIMENTO_UF:-SP}
+      SERVER_SERVLET_SESSION_TIMEOUT: ${SERVER_SERVLET_SESSION_TIMEOUT:-30m}
+    volumes:
+      - santos-chamados-anexos:/data/anexos
+      - santos-chamados-app-logs:/app/logs
+    networks:
+      - santos-chamados-network
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /actuator/health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3 && cat <&3 | grep -q UP'"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    mem_limit: 768m
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  santos-chamados-backup:
+    image: postgres:16.4-alpine
+    container_name: santos-chamados-backup
+    restart: unless-stopped
+    depends_on:
+      santos-chamados-db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: santos-chamados-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-14}
+      BACKUP_SCHEDULE: ${BACKUP_SCHEDULE:-0 3 * * *}
+      TZ: ${TZ:-America/Sao_Paulo}
+    volumes:
+      - santos-chamados-backups:/backups
+      - ./docker/backup/backup.sh:/scripts/backup.sh:ro
+      - ./docker/backup/entrypoint.sh:/scripts/entrypoint.sh:ro
+    entrypoint: ["/bin/sh", "/scripts/entrypoint.sh"]
+    networks:
+      - santos-chamados-network
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+networks:
+  santos-chamados-network:
+    name: santos-chamados-network
+    driver: bridge
+
+volumes:
+  santos-chamados-postgres-data:
+    name: santos-chamados-postgres-data
+  santos-chamados-anexos:
+    name: santos-chamados-anexos
+  santos-chamados-backups:
+    name: santos-chamados-backups
+  santos-chamados-app-logs:
+    name: santos-chamados-app-logs
