@@ -8,7 +8,8 @@ public record AparenciaView(
         String corSidebar,
         String corDestaque,
         String corFonte,
-        boolean personalizada
+        boolean personalizada,
+        boolean fontePersonalizada
 ) {
 
     public static AparenciaView padrao() {
@@ -17,6 +18,7 @@ public record AparenciaView(
                 AparenciaDefaults.COR_SIDEBAR,
                 AparenciaDefaults.COR_DESTAQUE,
                 AparenciaDefaults.COR_FONTE,
+                false,
                 false
         );
     }
@@ -26,14 +28,15 @@ public record AparenciaView(
             return padrao();
         }
         TemaModo modo = TemaModo.from(usuario.getTemaModo());
+        boolean fontePersonalizada = usuario.getCorFonte() != null && !usuario.getCorFonte().isBlank();
         String sidebar = AparenciaDefaults.normalizarHex(usuario.getCorSidebar(), AparenciaDefaults.COR_SIDEBAR);
         String destaque = AparenciaDefaults.normalizarHex(usuario.getCorDestaque(), AparenciaDefaults.COR_DESTAQUE);
         String fonte = resolverFonte(usuario.getCorFonte(), modo);
         boolean personalizada = modo != AparenciaDefaults.TEMA
                 || (usuario.getCorSidebar() != null && !usuario.getCorSidebar().isBlank())
                 || (usuario.getCorDestaque() != null && !usuario.getCorDestaque().isBlank())
-                || (usuario.getCorFonte() != null && !usuario.getCorFonte().isBlank());
-        return new AparenciaView(modo, sidebar, destaque, fonte, personalizada);
+                || fontePersonalizada;
+        return new AparenciaView(modo, sidebar, destaque, fonte, personalizada, fontePersonalizada);
     }
 
     public static AparenciaView from(UsuarioAutenticado user) {
@@ -41,21 +44,22 @@ public record AparenciaView(
             return padrao();
         }
         TemaModo modo = user.getTemaModo() == null ? AparenciaDefaults.TEMA : user.getTemaModo();
+        boolean fontePersonalizada = user.getCorFonte() != null && !user.getCorFonte().isBlank();
         String sidebar = AparenciaDefaults.normalizarHex(user.getCorSidebar(), AparenciaDefaults.COR_SIDEBAR);
         String destaque = AparenciaDefaults.normalizarHex(user.getCorDestaque(), AparenciaDefaults.COR_DESTAQUE);
         String fonte = resolverFonte(user.getCorFonte(), modo);
         boolean personalizada = modo != AparenciaDefaults.TEMA
                 || (user.getCorSidebar() != null && !user.getCorSidebar().isBlank())
                 || (user.getCorDestaque() != null && !user.getCorDestaque().isBlank())
-                || (user.getCorFonte() != null && !user.getCorFonte().isBlank());
-        return new AparenciaView(modo, sidebar, destaque, fonte, personalizada);
+                || fontePersonalizada;
+        return new AparenciaView(modo, sidebar, destaque, fonte, personalizada, fontePersonalizada);
     }
 
     private static String resolverFonte(String salva, TemaModo modo) {
         if (AparenciaDefaults.isHexValido(salva)) {
             return AparenciaDefaults.normalizarHex(salva, AparenciaDefaults.COR_FONTE);
         }
-        return modo == TemaModo.DARK ? AparenciaDefaults.COR_FONTE_DARK : AparenciaDefaults.COR_FONTE;
+        return AparenciaDefaults.fontePadrao(modo);
     }
 
     public boolean isDark() {
@@ -64,16 +68,20 @@ public record AparenciaView(
 
     public String cssVariables() {
         String primaryHover = escurecer(corDestaque, 0.18);
-        String textSecondary = misturar(corFonte, modo == TemaModo.DARK ? "#FFFFFF" : "#000000", 0.38);
-        return "--sidebar:" + corSidebar + ";"
-                + "--primary:" + corDestaque + ";"
-                + "--primary-hover:" + primaryHover + ";"
-                + "--info:" + primaryHover + ";"
-                + "--status-aberto:" + primaryHover + ";"
-                + "--status-atendimento:" + corDestaque + ";"
-                + "--text:" + corFonte + ";"
-                + "--text-secondary:" + textSecondary + ";"
-                + "--focus:0 0 0 3px " + comAlpha(corDestaque, 0.28) + ";";
+        StringBuilder css = new StringBuilder();
+        css.append("--sidebar:").append(corSidebar).append(';')
+                .append("--primary:").append(corDestaque).append(';')
+                .append("--primary-hover:").append(primaryHover).append(';')
+                .append("--info:").append(primaryHover).append(';')
+                .append("--status-aberto:").append(primaryHover).append(';')
+                .append("--status-atendimento:").append(corDestaque).append(';')
+                .append("--focus:0 0 0 3px ").append(comAlpha(corDestaque, 0.28)).append(';');
+        if (fontePersonalizada) {
+            String textSecondary = misturar(corFonte, modo == TemaModo.DARK ? "#FFFFFF" : "#000000", 0.38);
+            css.append("--text:").append(corFonte).append(';')
+                    .append("--text-secondary:").append(textSecondary).append(';');
+        }
+        return css.toString();
     }
 
     private static String escurecer(String hex, double amount) {

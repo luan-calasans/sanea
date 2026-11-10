@@ -6,6 +6,7 @@ import br.com.luancalasans.santoschamados.chamado.dto.AlterarStatusForm;
 import br.com.luancalasans.santoschamados.chamado.dto.ChamadoDetalheDTO;
 import br.com.luancalasans.santoschamados.chamado.entity.Chamado;
 import br.com.luancalasans.santoschamados.chamado.service.ChamadoService;
+import br.com.luancalasans.santoschamados.endereco.localidade.LocalidadeService;
 import br.com.luancalasans.santoschamados.infrastructure.security.ClientIpResolver;
 import br.com.luancalasans.santoschamados.infrastructure.security.SecurityUtils;
 import br.com.luancalasans.santoschamados.infrastructure.security.UsuarioAutenticado;
@@ -34,15 +35,18 @@ public class ChamadoController {
 
     private final ChamadoService chamadoService;
     private final TipoChamadoService tipoChamadoService;
+    private final LocalidadeService localidadeService;
     private final ClientIpResolver clientIpResolver;
 
     public ChamadoController(
             ChamadoService chamadoService,
             TipoChamadoService tipoChamadoService,
+            LocalidadeService localidadeService,
             ClientIpResolver clientIpResolver
     ) {
         this.chamadoService = chamadoService;
         this.tipoChamadoService = tipoChamadoService;
+        this.localidadeService = localidadeService;
         this.clientIpResolver = clientIpResolver;
     }
 
@@ -81,6 +85,7 @@ public class ChamadoController {
         form.setUf("SP");
         model.addAttribute("form", form);
         model.addAttribute("tipos", tipoChamadoService.listarAtivos());
+        model.addAttribute("ufs", localidadeService.listarUfs());
         return "chamado/novo";
     }
 
@@ -95,6 +100,7 @@ public class ChamadoController {
         UsuarioAutenticado user = SecurityUtils.requireUser();
         if (bindingResult.hasErrors()) {
             model.addAttribute("tipos", tipoChamadoService.listarAtivos());
+            model.addAttribute("ufs", localidadeService.listarUfs());
             model.addAttribute("erro", "Verifique os campos obrigatórios.");
             return "chamado/novo";
         }
@@ -113,6 +119,7 @@ public class ChamadoController {
         model.addAttribute("statusForm", new AlterarStatusForm());
         model.addAttribute("user", user);
         model.addAttribute("podeAlterarStatus", user.possuiAuthority(Authorities.CHAMADO_ALTERAR_STATUS));
+        model.addAttribute("podeRemoverChamado", user.possuiAuthority(Authorities.CHAMADO_REMOVER));
         model.addAttribute("podeBaixarAnexo", user.possuiAuthority(Authorities.ANEXO_BAIXAR));
         model.addAttribute("podeMensagemInterna", user.possuiAuthority(Authorities.MENSAGEM_INTERNA));
         model.addAttribute("podePublicar", user.possuiAuthority(Authorities.MENSAGEM_PUBLICA)
@@ -131,5 +138,17 @@ public class ChamadoController {
         chamadoService.alterarStatus(id, form, user, clientIpResolver.resolve(request));
         ra.addFlashAttribute("sucesso", "Status atualizado.");
         return "redirect:/chamados/" + id;
+    }
+
+    @PostMapping("/chamados/{id}/remover")
+    public String remover(
+            @PathVariable Long id,
+            HttpServletRequest request,
+            RedirectAttributes ra
+    ) {
+        UsuarioAutenticado user = SecurityUtils.requireUser();
+        chamadoService.remover(id, user, clientIpResolver.resolve(request));
+        ra.addFlashAttribute("sucesso", "Chamado removido.");
+        return "redirect:/chamados";
     }
 }

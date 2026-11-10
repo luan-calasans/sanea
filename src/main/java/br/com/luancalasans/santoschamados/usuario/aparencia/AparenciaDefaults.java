@@ -9,7 +9,24 @@ public final class AparenciaDefaults {
     public static final String COR_SIDEBAR = "#012a58";
     public static final String COR_DESTAQUE = "#366AB4";
     public static final String COR_FONTE = "#0C2748";
-    public static final String COR_FONTE_DARK = "#E8EEF7";
+    public static final String COR_FONTE_DARK = "#FFFFFF";
+    public static final String COR_FONTE_ON_LIGHT = "#0C2748";
+
+    public static String fontePadrao(TemaModo modo) {
+        return modo == TemaModo.DARK ? COR_FONTE_DARK : COR_FONTE;
+    }
+
+    public static boolean isFontePadraoDoTema(String hex, TemaModo modo) {
+        if (!isHexValido(hex)) {
+            return true;
+        }
+        String normalizado = normalizarHex(hex, COR_FONTE);
+        if (modo == TemaModo.DARK) {
+            return normalizado.equalsIgnoreCase(COR_FONTE_DARK)
+                    || normalizado.equalsIgnoreCase(COR_FONTE);
+        }
+        return normalizado.equalsIgnoreCase(COR_FONTE);
+    }
 
     private static final Pattern HEX = Pattern.compile("^#[0-9A-Fa-f]{6}$");
 

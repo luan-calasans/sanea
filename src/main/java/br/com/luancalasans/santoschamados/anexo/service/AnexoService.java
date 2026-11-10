@@ -105,6 +105,20 @@ public class AnexoService {
         return anexoRepository.findByChamadoIdOrderByCriadoEmAsc(chamadoId);
     }
 
+    @Transactional
+    public void removerPorChamado(Long chamadoId) {
+        List<Anexo> anexos = anexoRepository.findByChamadoIdOrderByCriadoEmAsc(chamadoId);
+        for (Anexo anexo : anexos) {
+            try {
+                fileStorage.delete(anexo.getCaminhoRelativo());
+            } catch (Exception ignored) {
+            }
+        }
+        if (!anexos.isEmpty()) {
+            anexoRepository.deleteByChamadoId(chamadoId);
+        }
+    }
+
     @Transactional(readOnly = true)
     public long contar(Long chamadoId) {
         return anexoRepository.countByChamadoId(chamadoId);

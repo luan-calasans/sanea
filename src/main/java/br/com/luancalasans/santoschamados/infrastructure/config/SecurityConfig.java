@@ -110,6 +110,7 @@ public class SecurityConfig {
                                 "/error/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/cep/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/localidades/**").authenticated()
                         .requestMatchers("/admin/**").hasAuthority("USUARIO_GERENCIAR")
                         .requestMatchers("/dashboard/**").hasAuthority("DASHBOARD_VISUALIZAR")
                         .anyRequest().authenticated()

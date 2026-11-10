@@ -1,22 +1,58 @@
 (() => {
   const initSidebar = () => {
     const toggle = document.getElementById('sidebar-toggle');
+    const collapse = document.getElementById('sidebar-collapse');
     const backdrop = document.getElementById('sidebar-backdrop');
+    const COLLAPSE_KEY = 'sanea.sidebar.collapsed';
 
     const setOpen = (open) => {
       document.body.classList.toggle('sidebar-open', open);
       if (toggle) {
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+        toggle.setAttribute('title', open ? 'Fechar menu' : 'Abrir menu');
       }
       if (backdrop) backdrop.hidden = !open;
+      if (collapse && isMobileNav()) {
+        collapse.setAttribute('aria-label', 'Fechar menu');
+        collapse.setAttribute('title', 'Fechar menu');
+      }
+    };
+
+    const isMobileNav = () => window.matchMedia('(max-width: 980px)').matches;
+
+    const setCollapsed = (collapsed) => {
+      document.body.classList.toggle('sidebar-collapsed', collapsed);
+      if (collapse) {
+        collapse.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        collapse.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+        collapse.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+      }
+      try {
+        localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0');
+      } catch (_) {
+      }
     };
 
     toggle?.addEventListener('click', () => setOpen(!document.body.classList.contains('sidebar-open')));
     backdrop?.addEventListener('click', () => setOpen(false));
+    collapse?.addEventListener('click', () => {
+      if (isMobileNav()) {
+        setOpen(false);
+        return;
+      }
+      setCollapsed(!document.body.classList.contains('sidebar-collapsed'));
+    });
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') setOpen(false);
     });
+
+    try {
+      if (localStorage.getItem(COLLAPSE_KEY) === '1') {
+        setCollapsed(true);
+      }
+    } catch (_) {
+    }
 
     const path = window.location.pathname.replace(/\/$/, '') || '/';
     const links = Array.from(document.querySelectorAll('.sidebar__link[href]'));
@@ -111,6 +147,46 @@
     });
   };
 
+  const initDescricaoEditor = () => {
+    const textarea = document.getElementById('descricao');
+    const host = document.getElementById('descricao-editor');
+    if (!textarea || !host || typeof Quill === 'undefined') return;
+
+    const quill = new Quill(host, {
+      theme: 'snow',
+      placeholder: 'Descreva a ocorrência com detalhes...',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link'],
+          ['clean']
+        ]
+      }
+    });
+
+    if (textarea.value) {
+      quill.root.innerHTML = textarea.value;
+    }
+
+    const sync = () => {
+      const text = quill.getText().trim();
+      textarea.value = text ? quill.root.innerHTML : '';
+    };
+
+    quill.on('text-change', sync);
+    textarea.closest('form')?.addEventListener('submit', (event) => {
+      sync();
+      if (!textarea.value) {
+        event.preventDefault();
+        host.classList.add('is-invalid');
+        quill.focus();
+      } else {
+        host.classList.remove('is-invalid');
+      }
+    });
+  };
+
   const initTipoOutro = () => {
     const select = document.getElementById('tipoChamadoId');
     const campo = document.getElementById('campo-tipo-outro');
@@ -129,18 +205,92 @@
     sync();
   };
 
+  const initLocalidades = () => {
+    const ufSelect = document.getElementById('uf');
+    const cidadeSelect = document.getElementById('cidade');
+    const cidadeStatus = document.getElementById('cidade-status');
+    if (!ufSelect || !cidadeSelect) return;
+
+    const cache = new Map();
+
+    const setStatus = (message) => {
+      if (cidadeStatus) cidadeStatus.textContent = message;
+    };
+
+    const populateCidades = (cidades, selected) => {
+      const current = selected || cidadeSelect.value || cidadeSelect.dataset.selected || '';
+      cidadeSelect.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = cidades.length ? 'Selecione' : 'Nenhuma cidade disponível';
+      cidadeSelect.appendChild(placeholder);
+      cidades.forEach((nome) => {
+        const option = document.createElement('option');
+        option.value = nome;
+        option.textContent = nome;
+        cidadeSelect.appendChild(option);
+      });
+      if (current) {
+        const match = Array.from(cidadeSelect.options).find(
+          (opt) => opt.value && opt.value.toLowerCase() === current.toLowerCase()
+        );
+        cidadeSelect.value = match ? match.value : '';
+      }
+      cidadeSelect.dataset.selected = cidadeSelect.value || '';
+    };
+
+    const carregarCidades = async (uf, selected) => {
+      if (!uf) {
+        populateCidades([], '');
+        setStatus('Selecione o estado para carregar as cidades.');
+        return;
+      }
+      setStatus('Carregando cidades...');
+      cidadeSelect.disabled = true;
+      try {
+        let cidades = cache.get(uf);
+        if (!cidades) {
+          const response = await fetch(`/api/localidades/ufs/${encodeURIComponent(uf)}/cidades`, {
+            headers: { Accept: 'application/json' }
+          });
+          if (!response.ok) throw new Error('Falha ao carregar cidades');
+          cidades = await response.json();
+          if (!Array.isArray(cidades)) cidades = [];
+          cache.set(uf, cidades);
+        }
+        populateCidades(cidades, selected);
+        setStatus(cidades.length ? '' : 'Nenhuma cidade encontrada.');
+      } catch (_) {
+        populateCidades([], selected);
+        setStatus('Não foi possível carregar as cidades. Tente novamente.');
+      } finally {
+        cidadeSelect.disabled = false;
+      }
+    };
+
+    ufSelect.addEventListener('change', () => {
+      cidadeSelect.dataset.selected = '';
+      carregarCidades(ufSelect.value, '');
+    });
+
+    window.__saneaCarregarCidades = carregarCidades;
+
+    if (ufSelect.value) {
+      carregarCidades(ufSelect.value, cidadeSelect.dataset.selected || '');
+    }
+  };
+
   const initCep = () => {
     const cepInput = document.getElementById('cep');
     if (!cepInput) return;
 
     const status = document.getElementById('cep-status');
     const verified = document.getElementById('enderecoVerificado');
-    const fields = ['logradouro', 'bairro', 'cidade', 'uf'].map((id) => document.getElementById(id));
+    const textFields = ['logradouro', 'bairro'].map((id) => document.getElementById(id));
 
-    const setManual = (enabled, message) => {
-      fields.forEach((el) => {
-        if (!el) return;
-        if (enabled) el.readOnly = false;
+    const setManual = (message) => {
+      textFields.forEach((el) => {
+        if (el) el.readOnly = false;
       });
       if (status) status.textContent = message;
     };
@@ -172,20 +322,27 @@
           const uf = document.getElementById('uf');
           if (logradouro) logradouro.value = e.logradouro || '';
           if (bairro) bairro.value = e.bairro || '';
-          if (cidade) cidade.value = e.cidade || '';
-          if (uf) uf.value = e.uf || '';
+          if (uf && e.uf) {
+            uf.value = String(e.uf).toUpperCase();
+          }
+          if (cidade) {
+            cidade.dataset.selected = e.cidade || '';
+          }
+          if (typeof window.__saneaCarregarCidades === 'function' && uf?.value) {
+            await window.__saneaCarregarCidades(uf.value, e.cidade || '');
+          }
           if (verified) verified.value = 'true';
-          setManual(false, 'Endereço encontrado');
-          fields.forEach((el) => {
+          if (status) status.textContent = 'Endereço encontrado';
+          textFields.forEach((el) => {
             if (el && !el.value) el.readOnly = false;
           });
         } else {
           if (verified) verified.value = 'false';
-          setManual(true, 'CEP não encontrado ou serviço indisponível. Preencha o endereço manualmente.');
+          setManual('CEP não encontrado ou serviço indisponível. Preencha o endereço manualmente.');
         }
       } catch (err) {
         if (verified) verified.value = 'false';
-        setManual(true, 'Consulta de CEP indisponível. Preencha o endereço manualmente.');
+        setManual('Consulta de CEP indisponível. Preencha o endereço manualmente.');
       }
     }
   };
@@ -240,6 +397,9 @@
     const corFonte = document.getElementById('corFonte');
     const corFonteHex = document.getElementById('corFonteHex');
     const hexOk = (value) => /^#[0-9A-Fa-f]{6}$/.test(value || '');
+    const FONTE_LIGHT = '#0C2748';
+    const FONTE_DARK = '#FFFFFF';
+    let fonteManual = form.dataset.fontePersonalizada === 'true';
 
     const darken = (hex, amount) => {
       const n = parseInt(hex.slice(1), 16);
@@ -260,15 +420,19 @@
       return `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
     };
 
+    const setFonteInputs = (hex) => {
+      if (corFonte) corFonte.value = hex;
+      if (corFonteHex) corFonteHex.value = hex.toUpperCase();
+    };
+
     const apply = () => {
       const modo = form.querySelector('input[name="temaModo"]:checked')?.value || 'LIGHT';
       const sidebar = hexOk(corSidebar?.value) ? corSidebar.value : '#012a58';
       const destaque = hexOk(corDestaque?.value) ? corDestaque.value : '#366AB4';
-      const fonte = hexOk(corFonte?.value)
-        ? corFonte.value
-        : (modo === 'DARK' ? '#E8EEF7' : '#0C2748');
+      const fontePadrao = modo === 'DARK' ? FONTE_DARK : FONTE_LIGHT;
+      if (!fonteManual) setFonteInputs(fontePadrao);
+      const fonte = hexOk(corFonte?.value) ? corFonte.value : fontePadrao;
       const hover = darken(destaque, 0.18);
-      const secondary = mix(fonte, modo === 'DARK' ? '#FFFFFF' : '#000000', 0.38);
       root.dataset.theme = modo === 'DARK' ? 'dark' : 'light';
       root.style.setProperty('--sidebar', sidebar);
       root.style.setProperty('--primary', destaque);
@@ -276,16 +440,23 @@
       root.style.setProperty('--info', hover);
       root.style.setProperty('--status-aberto', hover);
       root.style.setProperty('--status-atendimento', destaque);
-      root.style.setProperty('--text', fonte);
-      root.style.setProperty('--text-secondary', secondary);
+      if (fonteManual) {
+        const secondary = mix(fonte, modo === 'DARK' ? '#FFFFFF' : '#000000', 0.38);
+        root.style.setProperty('--text', fonte);
+        root.style.setProperty('--text-secondary', secondary);
+      } else {
+        root.style.removeProperty('--text');
+        root.style.removeProperty('--text-secondary');
+      }
       const themeMeta = document.querySelector('meta[name="theme-color"]');
       if (themeMeta) themeMeta.setAttribute('content', sidebar);
     };
 
-    const syncPair = (colorEl, hexEl) => {
+    const syncPair = (colorEl, hexEl, onManual) => {
       if (!colorEl || !hexEl) return;
       colorEl.addEventListener('input', () => {
         hexEl.value = colorEl.value.toUpperCase();
+        if (onManual) onManual();
         apply();
       });
       hexEl.addEventListener('input', () => {
@@ -293,13 +464,14 @@
         if (!hexOk(value)) return;
         colorEl.value = value;
         hexEl.value = value.toUpperCase();
+        if (onManual) onManual();
         apply();
       });
     };
 
     syncPair(corSidebar, corSidebarHex);
     syncPair(corDestaque, corDestaqueHex);
-    syncPair(corFonte, corFonteHex);
+    syncPair(corFonte, corFonteHex, () => { fonteManual = true; });
     form.querySelectorAll('input[name="temaModo"]').forEach((input) => {
       input.addEventListener('change', apply);
     });
@@ -315,7 +487,9 @@
     initSidebar();
     initNavProgress();
     initPrefetch();
+    initDescricaoEditor();
     initTipoOutro();
+    initLocalidades();
     initCep();
     initMessages();
     initAparenciaPreview();

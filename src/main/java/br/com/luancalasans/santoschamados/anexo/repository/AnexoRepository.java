@@ -14,6 +14,8 @@ public interface AnexoRepository extends JpaRepository<Anexo, Long> {
 
     long countByChamadoId(Long chamadoId);
 
+    void deleteByChamadoId(Long chamadoId);
+
     @Query("""
             SELECT a FROM Anexo a
             JOIN FETCH a.chamado

@@ -16,4 +16,6 @@ public interface StatusHistoricoRepository extends JpaRepository<StatusHistorico
             ORDER BY h.criadoEm ASC
             """)
     List<StatusHistorico> findByChamadoIdOrderByCriadoEmAsc(@Param("chamadoId") Long chamadoId);
+
+    void deleteByChamadoId(Long chamadoId);
 }

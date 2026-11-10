@@ -8,7 +8,10 @@
             <h1>Chamados</h1>
             <p>Filtre e acompanhe ocorrências registradas.</p>
         </div>
-        <a class="btn btn-primary" sec:authorize="hasAuthority('CHAMADO_CRIAR')" th:href="@{/chamados/novo}">Abrir chamado</a>
+        <a class="btn btn-primary" sec:authorize="hasAuthority('CHAMADO_CRIAR')" th:href="@{/chamados/novo}">
+            <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Abrir chamado
+        </a>
     </div>
 
     <section class="surface">

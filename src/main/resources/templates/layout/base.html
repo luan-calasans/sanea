@@ -27,30 +27,36 @@
             <a class="brand" th:href="@{/inicio}" aria-label="Sanea">
                 <img class="brand__logo" th:src="@{/img/logo.webp}" alt="Sanea" width="48" height="48">
             </a>
+            <button type="button" class="sidebar-collapse" id="sidebar-collapse"
+                    aria-controls="sidebar" aria-expanded="true" aria-label="Recolher menu" title="Recolher menu">
+                <svg class="sidebar-collapse__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M15 6l-6 6 6 6"/>
+                </svg>
+            </button>
         </div>
 
         <nav class="sidebar__nav" aria-label="Principal">
-            <a class="sidebar__link" sec:authorize="isAuthenticated()" th:href="@{/chamados}">
+            <a class="sidebar__link" sec:authorize="isAuthenticated()" th:href="@{/chamados}" title="Chamados">
                 <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
                 <span>Chamados</span>
             </a>
-            <a class="sidebar__link" sec:authorize="hasAuthority('CHAMADO_CRIAR')" th:href="@{/chamados/novo}">
-                <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg>
+            <a class="sidebar__link" sec:authorize="hasAuthority('CHAMADO_CRIAR')" th:href="@{/chamados/novo}" title="Abrir chamado">
+                <svg class="sidebar__icon sidebar__icon--plus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                 <span>Abrir chamado</span>
             </a>
-            <a class="sidebar__link" sec:authorize="hasAuthority('DASHBOARD_VISUALIZAR')" th:href="@{/dashboard}">
+            <a class="sidebar__link" sec:authorize="hasAuthority('DASHBOARD_VISUALIZAR')" th:href="@{/dashboard}" title="Dashboard">
                 <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>
                 <span>Dashboard</span>
             </a>
-            <a class="sidebar__link" sec:authorize="hasAuthority('USUARIO_GERENCIAR')" th:href="@{/admin}">
+            <a class="sidebar__link" sec:authorize="hasAuthority('USUARIO_GERENCIAR')" th:href="@{/admin}" title="Administração">
                 <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                 <span>Administração</span>
             </a>
-            <a class="sidebar__link" sec:authorize="isAuthenticated()" th:href="@{/conta}">
+            <a class="sidebar__link" sec:authorize="isAuthenticated()" th:href="@{/conta}" title="Minha conta">
                 <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.2-3.2 3.5-4.8 7-4.8s5.8 1.6 7 4.8"/></svg>
                 <span>Minha conta</span>
             </a>
-            <a class="sidebar__link" sec:authorize="!isAuthenticated()" th:href="@{/login}">
+            <a class="sidebar__link" sec:authorize="!isAuthenticated()" th:href="@{/login}" title="Entrar">
                 <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 21V3"/></svg>
                 <span>Entrar</span>
             </a>
@@ -63,20 +69,31 @@
             </div>
             <form th:action="@{/logout}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <button class="btn btn-sidebar-exit btn-sm" type="submit">Sair</button>
+                <button class="btn btn-sidebar-exit btn-sm" type="submit" title="Sair" aria-label="Sair">
+                    <svg class="sidebar__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                    <span class="btn-sidebar-exit__label">Sair</span>
+                </button>
             </form>
         </div>
     </aside>
 
     <div class="admin-main">
         <header class="topbar topbar--mobile">
-            <button type="button" class="menu-toggle" id="sidebar-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menu">
-                <svg class="menu-toggle__icon" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-                    <path class="menu-toggle__line menu-toggle__line--top" d="M3 5h14"/>
-                    <path class="menu-toggle__line menu-toggle__line--mid" d="M3 10h14"/>
-                    <path class="menu-toggle__line menu-toggle__line--bot" d="M3 15h14"/>
-                </svg>
-            </button>
+            <div class="topbar__start">
+                <button type="button" class="menu-toggle" id="sidebar-toggle" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menu">
+                    <svg class="menu-toggle__icon menu-toggle__icon--open" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                        <path class="menu-toggle__line menu-toggle__line--top" d="M3 5h14"/>
+                        <path class="menu-toggle__line menu-toggle__line--mid" d="M3 10h14"/>
+                        <path class="menu-toggle__line menu-toggle__line--bot" d="M3 15h14"/>
+                    </svg>
+                    <svg class="menu-toggle__icon menu-toggle__icon--close" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M15 6l-6 6 6 6"/>
+                    </svg>
+                </button>
+                <a class="topbar__brand" th:href="@{/inicio}" aria-label="Sanea">
+                    <img class="topbar__favicon" th:src="@{/favicon.webp}" alt="Sanea" width="32" height="32">
+                </a>
+            </div>
             <div class="topbar__spacer" aria-hidden="true"></div>
             <div class="topbar__user">
                 <div class="topbar__meta" sec:authorize="isAuthenticated()">
@@ -86,7 +103,10 @@
                 <a class="btn btn-secondary btn-sm" sec:authorize="!isAuthenticated()" th:href="@{/login}">Entrar</a>
                 <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                    <button class="btn btn-secondary btn-sm" type="submit">Sair</button>
+                    <button class="btn btn-secondary btn-sm" type="submit" title="Sair" aria-label="Sair">
+                        <svg class="btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                        <span>Sair</span>
+                    </button>
                 </form>
             </div>
         </header>

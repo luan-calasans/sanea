@@ -128,7 +128,12 @@ public class ContaService {
         usuario.setTemaModo(modo.name());
         usuario.setCorSidebar(AparenciaDefaults.normalizarHex(corSidebar, AparenciaDefaults.COR_SIDEBAR));
         usuario.setCorDestaque(AparenciaDefaults.normalizarHex(corDestaque, AparenciaDefaults.COR_DESTAQUE));
-        usuario.setCorFonte(AparenciaDefaults.normalizarHex(corFonte, AparenciaDefaults.COR_FONTE));
+        String fonteNorm = AparenciaDefaults.normalizarHex(corFonte, AparenciaDefaults.COR_FONTE);
+        if (AparenciaDefaults.isFontePadraoDoTema(fonteNorm, modo)) {
+            usuario.setCorFonte(null);
+        } else {
+            usuario.setCorFonte(fonteNorm);
+        }
         usuario.setAtualizadoEm(Instant.now());
         Usuario salvo = usuarioRepository.save(usuario);
         salvo.getPerfil().getAuthorities().size();

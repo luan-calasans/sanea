@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        <div class="grid-3">
+        <div class="grid-2">
             <div class="field">
                 <label for="complemento">Complemento</label>
                 <input id="complemento" th:field="*{complemento}" type="text">
@@ -63,20 +63,33 @@
                 <label for="bairro">Bairro</label>
                 <input id="bairro" th:field="*{bairro}" type="text" required>
             </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="field">
+                <label for="uf">Estado</label>
+                <select id="uf" th:field="*{uf}" required>
+                    <option value="">Selecione</option>
+                    <option th:each="estado : ${ufs}"
+                            th:value="${estado.sigla}"
+                            th:text="${estado.nome}"></option>
+                </select>
+            </div>
             <div class="field">
                 <label for="cidade">Cidade</label>
-                <input id="cidade" th:field="*{cidade}" type="text" value="Santos" required>
+                <select id="cidade" th:field="*{cidade}" required
+                        th:attr="data-selected=${form.cidade}">
+                    <option value="">Selecione o estado primeiro</option>
+                </select>
+                <span class="field-hint" id="cidade-status">Selecione o estado para carregar as cidades.</span>
             </div>
         </div>
 
-        <div class="field field--uf">
-            <label for="uf">UF</label>
-            <input id="uf" th:field="*{uf}" type="text" maxlength="2" value="SP" required>
-        </div>
-
-        <div class="field">
+        <div class="field field--richtext">
             <label for="descricao">Descrição</label>
-            <textarea id="descricao" th:field="*{descricao}" required maxlength="4000"></textarea>
+            <div id="descricao-editor" class="richtext-editor" aria-label="Editor de descrição"></div>
+            <textarea id="descricao" th:field="*{descricao}" required maxlength="4000" hidden></textarea>
+            <span class="field-hint">Use negrito, listas e links para detalhar a ocorrência.</span>
         </div>
 
         <div class="field">
@@ -90,6 +103,9 @@
             <a class="btn btn-secondary" th:href="@{/chamados}">Cancelar</a>
         </div>
     </form>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 </section>
 </body>
 </html>

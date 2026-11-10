@@ -25,6 +25,7 @@ import br.com.luancalasans.santoschamados.mensagem.dto.MensagemItemDTO;
 import br.com.luancalasans.santoschamados.mensagem.entity.MensagemChamado;
 import br.com.luancalasans.santoschamados.mensagem.repository.MensagemChamadoRepository;
 import br.com.luancalasans.santoschamados.shared.Authorities;
+import br.com.luancalasans.santoschamados.shared.HtmlSanitizer;
 import br.com.luancalasans.santoschamados.shared.StatusChamado;
 import br.com.luancalasans.santoschamados.shared.TipoEventoAuditoria;
 import br.com.luancalasans.santoschamados.shared.VisibilidadeMensagem;
@@ -227,7 +228,7 @@ public class ChamadoService {
                 chamado.getCep(),
                 chamado.isEnderecoVerificado(),
                 chamado.isEnderecoVerificado() ? " (verificado)" : " (preenchimento manual)",
-                chamado.getDescricao(),
+                HtmlSanitizer.sanitize(chamado.getDescricao()),
                 chamado.getVersao(),
                 historicos,
                 anexos,
@@ -283,6 +284,31 @@ public class ChamadoService {
             throw new AccessDeniedException("Sem permissão para listar chamados");
         }
         return chamadoRepository.findByUsuarioId(user.getId(), pageable).map(ChamadoListaItemDTO::from);
+    }
+
+    @Transactional
+    public void remover(Long chamadoId, UsuarioAutenticado user, String ip) {
+        if (!user.possuiAuthority(Authorities.CHAMADO_REMOVER)) {
+            throw new AccessDeniedException("Sem permissão para remover chamados");
+        }
+        Chamado chamado = chamadoRepository.findById(chamadoId)
+                .orElseThrow(() -> new ResourceNotFoundException("Chamado não encontrado"));
+        String protocolo = chamado.getProtocolo();
+
+        anexoService.removerPorChamado(chamadoId);
+        mensagemChamadoRepository.deleteByChamadoId(chamadoId);
+        statusHistoricoRepository.deleteByChamadoId(chamadoId);
+        chamadoRepository.delete(chamado);
+
+        auditoriaService.registrar(
+                TipoEventoAuditoria.CHAMADO_REMOVIDO,
+                user.getId(),
+                "CHAMADO",
+                protocolo,
+                "SUCESSO",
+                ip,
+                "Chamado removido pelo administrador"
+        );
     }
 
     @Transactional

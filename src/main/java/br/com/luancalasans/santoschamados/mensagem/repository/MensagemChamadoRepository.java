@@ -61,4 +61,6 @@ public interface MensagemChamadoRepository extends JpaRepository<MensagemChamado
             Long chamadoId,
             VisibilidadeMensagem visibilidade
     );
+
+    void deleteByChamadoId(Long chamadoId);
 }

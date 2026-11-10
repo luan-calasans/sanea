@@ -29,8 +29,15 @@ public class CacheConfig {
                         .expireAfterWrite(3, TimeUnit.MINUTES)
                         .build()
         );
+        CaffeineCache municipiosCache = new CaffeineCache(
+                "municipiosPorUf",
+                Caffeine.newBuilder()
+                        .maximumSize(30)
+                        .expireAfterWrite(7, TimeUnit.DAYS)
+                        .build()
+        );
         SimpleCacheManager manager = new SimpleCacheManager();
-        manager.setCaches(List.of(cepCache, dashboardCache));
+        manager.setCaches(List.of(cepCache, dashboardCache, municipiosCache));
         return manager;
     }
 }

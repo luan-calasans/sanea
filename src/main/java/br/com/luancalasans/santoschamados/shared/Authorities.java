@@ -6,6 +6,7 @@ public final class Authorities {
     public static final String CHAMADO_VISUALIZAR_PROPRIO = "CHAMADO_VISUALIZAR_PROPRIO";
     public static final String CHAMADO_VISUALIZAR_TODOS = "CHAMADO_VISUALIZAR_TODOS";
     public static final String CHAMADO_ALTERAR_STATUS = "CHAMADO_ALTERAR_STATUS";
+    public static final String CHAMADO_REMOVER = "CHAMADO_REMOVER";
     public static final String MENSAGEM_PUBLICA = "MENSAGEM_PUBLICA";
     public static final String MENSAGEM_INTERNA = "MENSAGEM_INTERNA";
     public static final String DASHBOARD_VISUALIZAR = "DASHBOARD_VISUALIZAR";

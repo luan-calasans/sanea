@@ -5,6 +5,8 @@ import br.com.luancalasans.santoschamados.chamado.dto.AberturaChamadoForm;
 import br.com.luancalasans.santoschamados.chamado.entity.Chamado;
 import br.com.luancalasans.santoschamados.chamado.entity.StatusHistorico;
 import br.com.luancalasans.santoschamados.chamado.repository.ChamadoRepository;
+import br.com.luancalasans.santoschamados.infrastructure.exception.BusinessException;
+import br.com.luancalasans.santoschamados.shared.HtmlSanitizer;
 import br.com.luancalasans.santoschamados.shared.StatusChamado;
 import br.com.luancalasans.santoschamados.usuario.entity.Usuario;
 import org.springframework.stereotype.Service;
@@ -37,7 +39,14 @@ public class ChamadoPersistenceService {
         chamado.setUsuario(autor);
         chamado.setTipoChamado(tipo);
         chamado.setStatus(StatusChamado.ABERTO);
-        chamado.setDescricao(form.getDescricao().trim());
+        String descricao = HtmlSanitizer.sanitize(form.getDescricao());
+        if (HtmlSanitizer.plainText(descricao).isBlank()) {
+            throw new BusinessException("Informe a descrição.");
+        }
+        if (descricao.length() > 4000) {
+            throw new BusinessException("A descrição é muito longa.");
+        }
+        chamado.setDescricao(descricao);
         if ("OUTROS".equalsIgnoreCase(tipo.getCodigo())) {
             chamado.setTipoOutro(blankToNull(form.getTipoOutro()));
         } else {
