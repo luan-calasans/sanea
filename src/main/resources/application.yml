@@ -107,6 +107,7 @@ app:
   rate-limit:
     public-protocol-limit: ${PUBLIC_PROTOCOL_RATE_LIMIT:10}
     public-protocol-window-seconds: ${PUBLIC_PROTOCOL_RATE_WINDOW_SECONDS:60}
+    public-protocol-block-seconds: ${PUBLIC_PROTOCOL_RATE_BLOCK_SECONDS:300}
   login:
     max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
     lock-minutes: ${LOGIN_LOCK_MINUTES:15}

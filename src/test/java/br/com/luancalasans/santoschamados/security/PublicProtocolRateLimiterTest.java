@@ -11,10 +11,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PublicProtocolRateLimiterTest {
 
     @Test
-    void bloqueiaAposLimite() {
+    void bloqueiaAposLimiteEMantemBloqueio() {
         AppProperties props = new AppProperties();
         props.getRateLimit().setPublicProtocolLimit(3);
         props.getRateLimit().setPublicProtocolWindowSeconds(60);
+        props.getRateLimit().setPublicProtocolBlockSeconds(300);
         PublicProtocolRateLimiter limiter = new PublicProtocolRateLimiter(props);
 
         assertThatCode(() -> {
@@ -24,7 +25,13 @@ class PublicProtocolRateLimiterTest {
         }).doesNotThrowAnyException();
 
         assertThatThrownBy(() -> limiter.check("1.1.1.1"))
-                .isInstanceOf(BusinessException.class);
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("5 minutos");
+
+        assertThatThrownBy(() -> limiter.check("1.1.1.1"))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("5 minutos");
+
         assertThatCode(() -> limiter.check("2.2.2.2")).doesNotThrowAnyException();
     }
 }

@@ -213,6 +213,7 @@ public class AppProperties {
     public static class RateLimit {
         private int publicProtocolLimit = 10;
         private int publicProtocolWindowSeconds = 60;
+        private int publicProtocolBlockSeconds = 300;
 
         public int getPublicProtocolLimit() {
             return publicProtocolLimit;
@@ -228,6 +229,14 @@ public class AppProperties {
 
         public void setPublicProtocolWindowSeconds(int publicProtocolWindowSeconds) {
             this.publicProtocolWindowSeconds = publicProtocolWindowSeconds;
+        }
+
+        public int getPublicProtocolBlockSeconds() {
+            return publicProtocolBlockSeconds;
+        }
+
+        public void setPublicProtocolBlockSeconds(int publicProtocolBlockSeconds) {
+            this.publicProtocolBlockSeconds = publicProtocolBlockSeconds;
         }
     }
 

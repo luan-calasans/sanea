@@ -7,6 +7,7 @@ import io.github.bucket4j.Bucket;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PublicProtocolRateLimiter {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final Map<String, Instant> blockedUntil = new ConcurrentHashMap<>();
     private final AppProperties appProperties;
 
     public PublicProtocolRateLimiter(AppProperties appProperties) {
@@ -21,16 +23,34 @@ public class PublicProtocolRateLimiter {
     }
 
     public void check(String ip) {
-        Bucket bucket = buckets.computeIfAbsent(ip == null ? "unknown" : ip, this::newBucket);
+        String key = ip == null || ip.isBlank() ? "unknown" : ip;
+        Instant agora = Instant.now();
+        Instant bloqueio = blockedUntil.get(key);
+        if (bloqueio != null) {
+            if (bloqueio.isAfter(agora)) {
+                throw new BusinessException(
+                        "Limite de consultas excedido. Aguarde 5 minutos e tente novamente."
+                );
+            }
+            blockedUntil.remove(key, bloqueio);
+            buckets.remove(key);
+        }
+
+        Bucket bucket = buckets.computeIfAbsent(key, this::newBucket);
         if (!bucket.tryConsume(1)) {
-            throw new BusinessException("Limite de consultas excedido. Aguarde um minuto e tente novamente.");
+            int blockSeconds = appProperties.getRateLimit().getPublicProtocolBlockSeconds();
+            blockedUntil.put(key, agora.plusSeconds(blockSeconds));
+            buckets.remove(key);
+            throw new BusinessException(
+                    "Limite de consultas excedido. Aguarde 5 minutos e tente novamente."
+            );
         }
     }
 
     private Bucket newBucket(String key) {
         Bandwidth limit = Bandwidth.builder()
                 .capacity(appProperties.getRateLimit().getPublicProtocolLimit())
-                .refillGreedy(
+                .refillIntervally(
                         appProperties.getRateLimit().getPublicProtocolLimit(),
                         Duration.ofSeconds(appProperties.getRateLimit().getPublicProtocolWindowSeconds())
                 )
