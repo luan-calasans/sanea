@@ -3,6 +3,10 @@ spring:
     name: ${APP_NAME:santos-chamados}
   profiles:
     default: dev
+  mvc:
+    contentnegotiation:
+      media-types:
+        webmanifest: application/manifest+json
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/santos_chamados}
     username: ${SPRING_DATASOURCE_USERNAME:santos_chamados}

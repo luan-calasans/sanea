@@ -1,5 +1,6 @@
 package br.com.luancalasans.santoschamados.infrastructure.security;
 
+import br.com.luancalasans.santoschamados.usuario.aparencia.TemaModo;
 import br.com.luancalasans.santoschamados.usuario.entity.Usuario;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,6 +19,10 @@ public class UsuarioAutenticado implements UserDetails {
     private final boolean emailVerificado;
     private final boolean deveTrocarSenha;
     private final String perfilCodigo;
+    private final TemaModo temaModo;
+    private final String corSidebar;
+    private final String corDestaque;
+    private final String corFonte;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public UsuarioAutenticado(Usuario usuario) {
@@ -29,6 +34,10 @@ public class UsuarioAutenticado implements UserDetails {
         this.emailVerificado = usuario.isEmailVerificado();
         this.deveTrocarSenha = usuario.isDeveTrocarSenha();
         this.perfilCodigo = usuario.getPerfil().getCodigo();
+        this.temaModo = TemaModo.from(usuario.getTemaModo());
+        this.corSidebar = usuario.getCorSidebar();
+        this.corDestaque = usuario.getCorDestaque();
+        this.corFonte = usuario.getCorFonte();
         this.authorities = usuario.getPerfil().getAuthorities().stream()
                 .map(a -> new SimpleGrantedAuthority(a.getCodigo()))
                 .collect(Collectors.toUnmodifiableSet());
@@ -52,6 +61,22 @@ public class UsuarioAutenticado implements UserDetails {
 
     public boolean isEmailVerificado() {
         return emailVerificado;
+    }
+
+    public TemaModo getTemaModo() {
+        return temaModo;
+    }
+
+    public String getCorSidebar() {
+        return corSidebar;
+    }
+
+    public String getCorDestaque() {
+        return corDestaque;
+    }
+
+    public String getCorFonte() {
+        return corFonte;
     }
 
     public boolean possuiAuthority(String authority) {

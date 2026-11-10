@@ -2,9 +2,10 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Erro - Sanea</title>
     <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
+    <th:block th:replace="~{fragments/pwa :: head}"></th:block>
     <th:block th:replace="~{fragments/fonts :: links}"></th:block>
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
@@ -19,5 +20,6 @@
         </div>
     </section>
 </main>
+<th:block th:replace="~{fragments/pwa :: scripts}"></th:block>
 </body>
 </html>

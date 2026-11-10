@@ -1,0 +1,17 @@
+<th:block th:fragment="head">
+    <meta name="theme-color" content="#0251A3">
+    <meta name="color-scheme" content="light">
+    <meta name="application-name" content="Sanea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Sanea">
+    <meta name="description" content="Sanea — gestão de chamados de esgoto, do registro ao atendimento.">
+    <link rel="manifest" th:href="@{/manifest.webmanifest}">
+    <link rel="apple-touch-icon" th:href="@{/icons/apple-touch-icon.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/icons/icon-32.png}">
+</th:block>
+
+<th:block th:fragment="scripts">
+    <script th:src="@{/js/pwa.js}" defer></script>
+</th:block>

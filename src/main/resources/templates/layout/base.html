@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-      th:fragment="layout (content)">
+      th:fragment="layout (content)"
+      th:data-theme="${aparencia != null and aparencia.dark ? 'dark' : 'light'}"
+      th:style="${aparencia != null ? aparencia.cssVariables() : ''}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <meta name="theme-color" th:content="${aparencia != null ? aparencia.corSidebar : '#0251A3'}">
     <title th:text="${pageTitle} ?: 'Sanea'">Sanea</title>
     <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
+    <th:block th:replace="~{fragments/pwa :: head}"></th:block>
     <th:block th:replace="~{fragments/fonts :: links}"></th:block>
     <link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
@@ -96,5 +100,6 @@
 </div>
 
 <script th:src="@{/js/app.js}" defer></script>
+<th:block th:replace="~{fragments/pwa :: scripts}"></th:block>
 </body>
 </html>

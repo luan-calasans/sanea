@@ -55,6 +55,73 @@
                     <a class="btn btn-primary" th:href="@{/conta/trocar-senha}">Trocar senha</a>
                 </div>
             </section>
+
+            <section class="surface stack" id="aparencia">
+                <h2>Aparência</h2>
+                <p class="muted">Escolha o tema e as cores do menu, dos botões e do texto. As preferências ficam salvas na sua conta.</p>
+                <form class="account-form stack" id="form-aparencia" th:action="@{/conta/aparencia}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+                    <fieldset class="theme-toggle">
+                        <legend>Tema</legend>
+                        <label class="theme-toggle__option">
+                            <input type="radio" name="temaModo" value="LIGHT"
+                                   th:checked="${aparencia == null or !aparencia.dark}">
+                            <span>Claro</span>
+                        </label>
+                        <label class="theme-toggle__option">
+                            <input type="radio" name="temaModo" value="DARK"
+                                   th:checked="${aparencia != null and aparencia.dark}">
+                            <span>Escuro</span>
+                        </label>
+                    </fieldset>
+
+                    <div class="theme-colors">
+                        <div class="field field--color">
+                            <label for="corSidebar">Cor do menu lateral</label>
+                            <div class="color-picker">
+                                <input id="corSidebar" name="corSidebar" type="color"
+                                       th:value="${aparencia != null ? aparencia.corSidebar : '#012a58'}">
+                                <input class="color-picker__hex" id="corSidebarHex" type="text" maxlength="7"
+                                       th:value="${aparencia != null ? aparencia.corSidebar : '#012A58'}"
+                                       aria-label="Hexadecimal do menu lateral" pattern="^#[0-9A-Fa-f]{6}$">
+                            </div>
+                        </div>
+                        <div class="field field--color">
+                            <label for="corDestaque">Cor dos elementos</label>
+                            <div class="color-picker">
+                                <input id="corDestaque" name="corDestaque" type="color"
+                                       th:value="${aparencia != null ? aparencia.corDestaque : '#366AB4'}">
+                                <input class="color-picker__hex" id="corDestaqueHex" type="text" maxlength="7"
+                                       th:value="${aparencia != null ? aparencia.corDestaque : '#366AB4'}"
+                                       aria-label="Hexadecimal dos elementos" pattern="^#[0-9A-Fa-f]{6}$">
+                            </div>
+                            <span class="field-hint">Botões, links e destaques.</span>
+                        </div>
+                        <div class="field field--color">
+                            <label for="corFonte">Cor da fonte</label>
+                            <div class="color-picker">
+                                <input id="corFonte" name="corFonte" type="color"
+                                       th:value="${aparencia != null ? aparencia.corFonte : '#0C2748'}">
+                                <input class="color-picker__hex" id="corFonteHex" type="text" maxlength="7"
+                                       th:value="${aparencia != null ? aparencia.corFonte : '#0C2748'}"
+                                       aria-label="Hexadecimal da fonte" pattern="^#[0-9A-Fa-f]{6}$">
+                            </div>
+                            <span class="field-hint">Textos principais da interface.</span>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-primary" type="submit">Salvar aparência</button>
+                    </div>
+                </form>
+                <form th:action="@{/conta/aparencia/redefinir}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="actions">
+                        <button class="btn btn-secondary" type="submit">Redefinir padrão</button>
+                    </div>
+                </form>
+            </section>
         </div>
 
         <section class="surface stack">

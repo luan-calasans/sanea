@@ -45,7 +45,10 @@ public class ForcePasswordChangeFilter extends OncePerRequestFilter {
                 || path.startsWith("/actuator/")
                 || path.startsWith("/error")
                 || "/favicon.ico".equals(path)
-                || "/favicon.webp".equals(path)) {
+                || "/favicon.webp".equals(path)
+                || "/manifest.webmanifest".equals(path)
+                || "/sw.js".equals(path)
+                || "/offline.html".equals(path)) {
             return true;
         }
         if ("/logout".equals(path) && "POST".equalsIgnoreCase(method)) {

@@ -62,13 +62,7 @@ public class ContaController {
     ) {
         UsuarioAutenticado atual = SecurityUtils.requireUser();
         Usuario atualizado = contaService.trocarSenha(atual, senhaAtual, novaSenha, confirmacao);
-        UsuarioAutenticado principal = new UsuarioAutenticado(atualizado);
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                principal,
-                principal.getPassword(),
-                principal.getAuthorities()
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        atualizarSessao(atualizado);
         ra.addFlashAttribute("sucesso", "Senha alterada com sucesso.");
         return "redirect:/inicio";
     }
@@ -78,5 +72,43 @@ public class ContaController {
         contaService.solicitarAlteracaoEmail(SecurityUtils.requireUser(), novoEmail);
         ra.addFlashAttribute("sucesso", "Enviamos um e-mail de confirmação para o novo endereço.");
         return "redirect:/conta";
+    }
+
+    @PostMapping("/conta/aparencia")
+    public String atualizarAparencia(
+            @RequestParam String temaModo,
+            @RequestParam String corSidebar,
+            @RequestParam String corDestaque,
+            @RequestParam String corFonte,
+            RedirectAttributes ra
+    ) {
+        Usuario atualizado = contaService.atualizarAparencia(
+                SecurityUtils.requireUser(),
+                temaModo,
+                corSidebar,
+                corDestaque,
+                corFonte
+        );
+        atualizarSessao(atualizado);
+        ra.addFlashAttribute("sucesso", "Aparência salva.");
+        return "redirect:/conta";
+    }
+
+    @PostMapping("/conta/aparencia/redefinir")
+    public String redefinirAparencia(RedirectAttributes ra) {
+        Usuario atualizado = contaService.redefinirAparencia(SecurityUtils.requireUser());
+        atualizarSessao(atualizado);
+        ra.addFlashAttribute("sucesso", "Aparência redefinida para o padrão.");
+        return "redirect:/conta";
+    }
+
+    private void atualizarSessao(Usuario atualizado) {
+        UsuarioAutenticado principal = new UsuarioAutenticado(atualizado);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                principal,
+                principal.getPassword(),
+                principal.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

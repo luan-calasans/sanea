@@ -56,6 +56,18 @@ public class Usuario {
     @Column(name = "desativado_em")
     private Instant desativadoEm;
 
+    @Column(name = "tema_modo", nullable = false, length = 10)
+    private String temaModo = "LIGHT";
+
+    @Column(name = "cor_sidebar", length = 7)
+    private String corSidebar;
+
+    @Column(name = "cor_destaque", length = 7)
+    private String corDestaque;
+
+    @Column(name = "cor_fonte", length = 7)
+    private String corFonte;
+
     @Version
     @Column(name = "versao", nullable = false)
     private Long versao;
@@ -154,6 +166,38 @@ public class Usuario {
 
     public void setDesativadoEm(Instant desativadoEm) {
         this.desativadoEm = desativadoEm;
+    }
+
+    public String getTemaModo() {
+        return temaModo;
+    }
+
+    public void setTemaModo(String temaModo) {
+        this.temaModo = temaModo;
+    }
+
+    public String getCorSidebar() {
+        return corSidebar;
+    }
+
+    public void setCorSidebar(String corSidebar) {
+        this.corSidebar = corSidebar;
+    }
+
+    public String getCorDestaque() {
+        return corDestaque;
+    }
+
+    public void setCorDestaque(String corDestaque) {
+        this.corDestaque = corDestaque;
+    }
+
+    public String getCorFonte() {
+        return corFonte;
+    }
+
+    public void setCorFonte(String corFonte) {
+        this.corFonte = corFonte;
     }
 
     public Long getVersao() {

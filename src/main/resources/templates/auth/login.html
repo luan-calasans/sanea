@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Entrar - Sanea</title>
     <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
+    <th:block th:replace="~{fragments/pwa :: head}"></th:block>
     <th:block th:replace="~{fragments/fonts :: links}"></th:block>
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <script th:if="${recaptchaEnabled}" src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -42,5 +43,6 @@
         </div>
     </div>
 </div>
+<th:block th:replace="~{fragments/pwa :: scripts}"></th:block>
 </body>
 </html>

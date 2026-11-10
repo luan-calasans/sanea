@@ -169,6 +169,9 @@ A aplicação escuta HTTP no bind configurado. Para internet, coloque um proxy r
 - Fila operacional, status com histórico, mensagens e anexos  
 - Dashboard, admin de usuários/tipos e auditoria  
 - RBAC, reCAPTCHA, rate limit, backup automático do PostgreSQL  
+- **PWA**: instalável (Android/desktop/iOS “Adicionar à Tela de Início”), service worker, cache de estáticos e página offline  
+
+> PWA exige HTTPS (ou `localhost`). Em produção atrás de Cloudflare/túnel isso já está coberto.
 
 ---
 

@@ -5,6 +5,8 @@ import br.com.luancalasans.santoschamados.auth.service.CadastroService;
 import br.com.luancalasans.santoschamados.infrastructure.exception.BusinessException;
 import br.com.luancalasans.santoschamados.infrastructure.security.UsuarioAutenticado;
 import br.com.luancalasans.santoschamados.shared.TipoEventoAuditoria;
+import br.com.luancalasans.santoschamados.usuario.aparencia.AparenciaDefaults;
+import br.com.luancalasans.santoschamados.usuario.aparencia.TemaModo;
 import br.com.luancalasans.santoschamados.usuario.entity.EmailVerificacaoToken;
 import br.com.luancalasans.santoschamados.usuario.entity.Usuario;
 import br.com.luancalasans.santoschamados.usuario.repository.UsuarioRepository;
@@ -102,5 +104,47 @@ public class ContaService {
                 null,
                 null
         );
+    }
+
+    @Transactional
+    public Usuario atualizarAparencia(
+            UsuarioAutenticado user,
+            String temaModo,
+            String corSidebar,
+            String corDestaque,
+            String corFonte
+    ) {
+        Usuario usuario = obter(user);
+        TemaModo modo = TemaModo.from(temaModo);
+        if (!AparenciaDefaults.isHexValido(corSidebar)) {
+            throw new BusinessException("Cor do menu lateral inválida.");
+        }
+        if (!AparenciaDefaults.isHexValido(corDestaque)) {
+            throw new BusinessException("Cor de destaque inválida.");
+        }
+        if (!AparenciaDefaults.isHexValido(corFonte)) {
+            throw new BusinessException("Cor da fonte inválida.");
+        }
+        usuario.setTemaModo(modo.name());
+        usuario.setCorSidebar(AparenciaDefaults.normalizarHex(corSidebar, AparenciaDefaults.COR_SIDEBAR));
+        usuario.setCorDestaque(AparenciaDefaults.normalizarHex(corDestaque, AparenciaDefaults.COR_DESTAQUE));
+        usuario.setCorFonte(AparenciaDefaults.normalizarHex(corFonte, AparenciaDefaults.COR_FONTE));
+        usuario.setAtualizadoEm(Instant.now());
+        Usuario salvo = usuarioRepository.save(usuario);
+        salvo.getPerfil().getAuthorities().size();
+        return salvo;
+    }
+
+    @Transactional
+    public Usuario redefinirAparencia(UsuarioAutenticado user) {
+        Usuario usuario = obter(user);
+        usuario.setTemaModo(AparenciaDefaults.TEMA.name());
+        usuario.setCorSidebar(null);
+        usuario.setCorDestaque(null);
+        usuario.setCorFonte(null);
+        usuario.setAtualizadoEm(Instant.now());
+        Usuario salvo = usuarioRepository.save(usuario);
+        salvo.getPerfil().getAuthorities().size();
+        return salvo;
     }
 }

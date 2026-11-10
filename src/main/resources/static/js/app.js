@@ -228,6 +228,89 @@
       .replaceAll("'", '&#39;');
   }
 
+  const initAparenciaPreview = () => {
+    const form = document.getElementById('form-aparencia');
+    if (!form) return;
+
+    const root = document.documentElement;
+    const corSidebar = document.getElementById('corSidebar');
+    const corSidebarHex = document.getElementById('corSidebarHex');
+    const corDestaque = document.getElementById('corDestaque');
+    const corDestaqueHex = document.getElementById('corDestaqueHex');
+    const corFonte = document.getElementById('corFonte');
+    const corFonteHex = document.getElementById('corFonteHex');
+    const hexOk = (value) => /^#[0-9A-Fa-f]{6}$/.test(value || '');
+
+    const darken = (hex, amount) => {
+      const n = parseInt(hex.slice(1), 16);
+      const r = Math.round(((n >> 16) & 255) * (1 - amount));
+      const g = Math.round(((n >> 8) & 255) * (1 - amount));
+      const b = Math.round((n & 255) * (1 - amount));
+      return `#${[r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+    };
+
+    const mix = (hex, other, ratio) => {
+      const a = parseInt(hex.slice(1), 16);
+      const b = parseInt(other.slice(1), 16);
+      const ch = (shift) => {
+        const x = (a >> shift) & 255;
+        const y = (b >> shift) & 255;
+        return Math.round(x + (y - x) * ratio);
+      };
+      return `#${[ch(16), ch(8), ch(0)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+    };
+
+    const apply = () => {
+      const modo = form.querySelector('input[name="temaModo"]:checked')?.value || 'LIGHT';
+      const sidebar = hexOk(corSidebar?.value) ? corSidebar.value : '#012a58';
+      const destaque = hexOk(corDestaque?.value) ? corDestaque.value : '#366AB4';
+      const fonte = hexOk(corFonte?.value)
+        ? corFonte.value
+        : (modo === 'DARK' ? '#E8EEF7' : '#0C2748');
+      const hover = darken(destaque, 0.18);
+      const secondary = mix(fonte, modo === 'DARK' ? '#FFFFFF' : '#000000', 0.38);
+      root.dataset.theme = modo === 'DARK' ? 'dark' : 'light';
+      root.style.setProperty('--sidebar', sidebar);
+      root.style.setProperty('--primary', destaque);
+      root.style.setProperty('--primary-hover', hover);
+      root.style.setProperty('--info', hover);
+      root.style.setProperty('--status-aberto', hover);
+      root.style.setProperty('--status-atendimento', destaque);
+      root.style.setProperty('--text', fonte);
+      root.style.setProperty('--text-secondary', secondary);
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeMeta) themeMeta.setAttribute('content', sidebar);
+    };
+
+    const syncPair = (colorEl, hexEl) => {
+      if (!colorEl || !hexEl) return;
+      colorEl.addEventListener('input', () => {
+        hexEl.value = colorEl.value.toUpperCase();
+        apply();
+      });
+      hexEl.addEventListener('input', () => {
+        const value = hexEl.value.trim();
+        if (!hexOk(value)) return;
+        colorEl.value = value;
+        hexEl.value = value.toUpperCase();
+        apply();
+      });
+    };
+
+    syncPair(corSidebar, corSidebarHex);
+    syncPair(corDestaque, corDestaqueHex);
+    syncPair(corFonte, corFonteHex);
+    form.querySelectorAll('input[name="temaModo"]').forEach((input) => {
+      input.addEventListener('change', apply);
+    });
+    form.addEventListener('submit', () => {
+      if (hexOk(corSidebarHex?.value)) corSidebar.value = corSidebarHex.value;
+      if (hexOk(corDestaqueHex?.value)) corDestaque.value = corDestaqueHex.value;
+      if (hexOk(corFonteHex?.value)) corFonte.value = corFonteHex.value;
+    });
+    apply();
+  };
+
   const boot = () => {
     initSidebar();
     initNavProgress();
@@ -235,6 +318,7 @@
     initTipoOutro();
     initCep();
     initMessages();
+    initAparenciaPreview();
   };
 
   if (document.readyState === 'loading') {
