@@ -242,7 +242,7 @@ public class AppProperties {
 
     public static class Login {
         private int maxAttempts = 5;
-        private int lockMinutes = 15;
+        private int lockMinutes = 5;
 
         public int getMaxAttempts() {
             return maxAttempts;

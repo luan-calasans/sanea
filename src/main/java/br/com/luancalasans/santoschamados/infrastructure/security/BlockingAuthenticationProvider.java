@@ -1,6 +1,7 @@
 package br.com.luancalasans.santoschamados.infrastructure.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
@@ -32,10 +33,9 @@ public class BlockingAuthenticationProvider extends DaoAuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String email = authentication.getName();
         String ip = resolveIp();
-        if (loginAttemptService.isBlocked(email, ip)) {
-            throw new org.springframework.security.authentication.BadCredentialsException("Credenciais inválidas");
+        if (loginAttemptService.isBlocked(ip)) {
+            throw new LockedException("IP temporariamente bloqueado por excesso de tentativas");
         }
         return super.authenticate(authentication);
     }

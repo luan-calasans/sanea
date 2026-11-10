@@ -95,6 +95,8 @@ public class SecurityConfig {
                                 "/verificar-email",
                                 "/consulta",
                                 "/consulta/**",
+                                "/robots.txt",
+                                "/sitemap.xml",
                                 "/css/**",
                                 "/js/**",
                                 "/img/**",
@@ -190,10 +192,16 @@ public class SecurityConfig {
                     HttpServletResponse response,
                     AuthenticationException exception
             ) throws IOException, ServletException {
-                String email = request.getParameter("email");
-                String ip = clientIpResolver.resolve(request);
-                if (email != null) {
-                    loginAttemptService.registerFailure(email, ip);
+                String reason = "credenciais";
+                if (exception instanceof LockedException) {
+                    reason = "bloqueado";
+                } else if (exception instanceof DisabledException) {
+                    reason = "inativo";
+                } else {
+                    String email = request.getParameter("email");
+                    String ip = clientIpResolver.resolve(request);
+                    LoginAttemptService.LoginAttemptResult result =
+                            loginAttemptService.registerFailure(email, ip);
                     auditoriaService.registrar(
                             TipoEventoAuditoria.LOGIN_FALHA,
                             null,
@@ -203,12 +211,13 @@ public class SecurityConfig {
                             ip,
                             "Tentativa de autenticação rejeitada"
                     );
-                }
-                String reason = "credenciais";
-                if (exception instanceof LockedException) {
-                    reason = "bloqueado";
-                } else if (exception instanceof DisabledException) {
-                    reason = "inativo";
+                    if (result.bloqueado()) {
+                        reason = "bloqueado";
+                    } else if (result.falhas() >= 3) {
+                        setDefaultFailureUrl("/login?erro=aviso&restantes=" + result.restantes());
+                        super.onAuthenticationFailure(request, response, exception);
+                        return;
+                    }
                 }
                 setDefaultFailureUrl("/login?erro=" + reason);
                 super.onAuthenticationFailure(request, response, exception);

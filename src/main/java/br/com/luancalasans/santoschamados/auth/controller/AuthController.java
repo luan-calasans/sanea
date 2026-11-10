@@ -35,14 +35,23 @@ public class AuthController {
     @GetMapping("/login")
     public String login(
             @RequestParam(value = "erro", required = false) String erro,
+            @RequestParam(value = "restantes", required = false) Integer restantes,
             @RequestParam(value = "logout", required = false) String logout,
             Model model
     ) {
         model.addAttribute("recaptchaEnabled", appProperties.getRecaptcha().isEnabled());
         model.addAttribute("recaptchaSiteKey", appProperties.getRecaptcha().getSiteKey());
+        int lockMinutes = appProperties.getLogin().getLockMinutes();
         if (erro != null) {
             model.addAttribute("erro", switch (erro) {
-                case "bloqueado" -> "Muitas tentativas. Aguarde alguns minutos e tente novamente.";
+                case "bloqueado" -> "Muitas tentativas incorretas. Seu acesso foi bloqueado temporariamente por "
+                        + lockMinutes + " minutos. Tente novamente depois.";
+                case "aviso" -> {
+                    int r = restantes != null ? restantes : 2;
+                    String texto = r == 1 ? "1 tentativa" : r + " tentativas";
+                    yield "Atenção: faltam mais " + texto
+                            + " antes do bloqueio temporário de " + lockMinutes + " minutos.";
+                }
                 case "inativo" -> "Conta inativa ou e-mail não verificado.";
                 case "recaptcha" -> "Confirme o reCAPTCHA para continuar.";
                 default -> "Não foi possível autenticar com os dados informados.";

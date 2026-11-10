@@ -53,6 +53,7 @@ public class ConsultaPublicaController {
             return "redirect:/chamados";
         }
         popularRecaptcha(model);
+        popularSeo(model, true, null);
         model.addAttribute("protocolo", protocolo);
         return "consulta/index";
     }
@@ -87,8 +88,10 @@ public class ConsultaPublicaController {
 
         if (dto == null) {
             model.addAttribute("naoEncontrado", true);
+            popularSeo(model, false, null);
         } else {
             model.addAttribute("chamado", dto);
+            popularSeo(model, false, dto.protocolo());
         }
         return "consulta/index";
     }
@@ -96,6 +99,36 @@ public class ConsultaPublicaController {
     private void popularRecaptcha(Model model) {
         model.addAttribute("recaptchaEnabled", appProperties.getRecaptcha().isEnabled());
         model.addAttribute("recaptchaSiteKey", appProperties.getRecaptcha().getSiteKey());
+    }
+
+    private void popularSeo(Model model, boolean indexavel, String protocolo) {
+        String base = appProperties.getBaseUrl();
+        if (base == null || base.isBlank()) {
+            base = "http://localhost:8080";
+        }
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        String cidade = appProperties.getAtendimento().getCidade();
+        String uf = appProperties.getAtendimento().getUf();
+        String local = cidade + "/" + uf;
+
+        String title = protocolo != null && !protocolo.isBlank()
+                ? "Protocolo " + protocolo + " | Consulta Sanea"
+                : "Consultar protocolo de solicitação em " + local + " | Sanea";
+        String description = "Consulte o andamento da sua solicitação de esgoto no Sanea em "
+                + local
+                + ". Informe o protocolo e veja status, histórico e mensagens públicas — sem cadastro.";
+
+        model.addAttribute("seoIndexavel", indexavel);
+        model.addAttribute("seoBaseUrl", base);
+        model.addAttribute("seoCanonical", base + "/consulta");
+        model.addAttribute("seoOgImage", base + "/icons/icon-512.png");
+        model.addAttribute("seoTitle", title);
+        model.addAttribute("seoDescription", description);
+        model.addAttribute("seoCidade", cidade);
+        model.addAttribute("seoUf", uf);
+        model.addAttribute("seoLocal", local);
     }
 
     private boolean estaAutenticado() {

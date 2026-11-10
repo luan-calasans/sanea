@@ -12,20 +12,24 @@ public interface LoginTentativaRepository extends JpaRepository<LoginTentativa, 
 
     @Query("""
             SELECT COUNT(t) FROM LoginTentativa t
-            WHERE t.emailNormalizado = :email
-              AND t.ipAddress = :ip
+            WHERE t.ipAddress = :ip
               AND t.sucesso = false
               AND t.criadoEm >= :desde
             """)
-    long contarFalhasRecentes(
-            @Param("email") String email,
+    long contarFalhasRecentesPorIp(
             @Param("ip") String ip,
             @Param("desde") Instant desde
     );
 
-    Optional<LoginTentativa> findFirstByEmailNormalizadoAndIpAddressAndBloqueadoAteAfterOrderByCriadoEmDesc(
-            String emailNormalizado,
+    Optional<LoginTentativa> findFirstByIpAddressAndBloqueadoAteAfterOrderByCriadoEmDesc(
             String ipAddress,
             Instant agora
     );
+
+    @Query("""
+            SELECT MAX(t.bloqueadoAte) FROM LoginTentativa t
+            WHERE t.ipAddress = :ip
+              AND t.bloqueadoAte IS NOT NULL
+            """)
+    Optional<Instant> findUltimoBloqueadoAtePorIp(@Param("ip") String ip);
 }

@@ -170,7 +170,8 @@ A aplicação escuta HTTP no bind configurado. Para internet, coloque um proxy r
 - Dashboard, admin de usuários/tipos e auditoria  
 - **Minha conta**: tema claro/escuro, cores de menu/elementos/fonte (salvas por usuário), redefinir padrão  
 - Menu lateral recolhível (desktop: só ícones; mobile: hamburger + favicon)  
-- RBAC, reCAPTCHA, rate limit na consulta pública, backup automático do PostgreSQL  
+- RBAC, reCAPTCHA, rate limit na consulta pública, rate limit de login por IP (5 falhas → bloqueio de 5 min; aviso a partir da 3ª), backup automático do PostgreSQL  
+- SEO na consulta pública: meta/OG/Twitter, JSON-LD (FAQ/HowTo), `robots.txt` e `sitemap.xml`  
 - **PWA**: instalável (Android/desktop/iOS “Adicionar à Tela de Início”), service worker, cache de estáticos e página offline  
 
 > PWA exige HTTPS (ou `localhost`). Em produção atrás de Cloudflare/túnel isso já está coberto.

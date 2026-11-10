@@ -1,50 +1,252 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Consulta pública — Sanea</title>
+    <title th:text="${seoTitle}">Consultar protocolo de solicitação | Sanea</title>
+    <meta name="description" th:content="${seoDescription}">
+    <meta name="robots" th:content="${seoIndexavel ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' : 'noindex, nofollow'}">
+    <meta name="googlebot" th:content="${seoIndexavel ? 'index, follow' : 'noindex, nofollow'}">
+    <meta name="author" content="Sanea">
+    <meta name="application-name" content="Sanea">
+    <meta name="rating" content="general">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="geo.region" th:content="'BR-' + ${seoUf}">
+    <meta name="geo.placename" th:content="${seoCidade}">
+    <meta name="language" content="pt-BR">
+    <link rel="canonical" th:href="${seoCanonical}">
+    <link rel="alternate" hreflang="pt-BR" th:href="${seoCanonical}">
+    <link rel="alternate" hreflang="x-default" th:href="${seoCanonical}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Sanea">
+    <meta property="og:title" th:content="${seoTitle}">
+    <meta property="og:description" th:content="${seoDescription}">
+    <meta property="og:url" th:content="${seoCanonical}">
+    <meta property="og:image" th:content="${seoOgImage}">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="Logotipo Sanea — consulta de protocolo de solicitação">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" th:content="${seoTitle}">
+    <meta name="twitter:description" th:content="${seoDescription}">
+    <meta name="twitter:image" th:content="${seoOgImage}">
+    <meta name="twitter:image:alt" content="Logotipo Sanea">
+
     <link rel="icon" type="image/webp" th:href="@{/favicon.webp}">
     <th:block th:replace="~{fragments/pwa :: head}"></th:block>
     <th:block th:replace="~{fragments/fonts :: links}"></th:block>
     <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="preload" as="image" th:href="@{/img/logo.webp}">
     <script th:if="${recaptchaEnabled}" src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <script type="application/ld+json" th:inline="javascript">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": /*[[${seoBaseUrl + '#organizacao'}]]*/ "",
+          "name": "Sanea",
+          "url": /*[[${seoBaseUrl}]]*/ "",
+          "logo": {
+            "@type": "ImageObject",
+            "url": /*[[${seoOgImage}]]*/ ""
+          },
+          "areaServed": {
+            "@type": "City",
+            "name": /*[[${seoCidade}]]*/ "",
+            "containedInPlace": {
+              "@type": "State",
+              "name": /*[[${seoUf}]]*/ "",
+              "containedInPlace": {
+                "@type": "Country",
+                "name": "Brasil"
+              }
+            }
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": /*[[${seoBaseUrl + '#website'}]]*/ "",
+          "url": /*[[${seoBaseUrl}]]*/ "",
+          "name": "Sanea",
+          "inLanguage": "pt-BR",
+          "publisher": { "@id": /*[[${seoBaseUrl + '#organizacao'}]]*/ "" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": /*[[${seoCanonical + '?protocolo={search_term_string}'}]]*/ ""
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "WebPage",
+          "@id": /*[[${seoCanonical + '#webpage'}]]*/ "",
+          "url": /*[[${seoCanonical}]]*/ "",
+          "name": /*[[${seoTitle}]]*/ "",
+          "description": /*[[${seoDescription}]]*/ "",
+          "inLanguage": "pt-BR",
+          "isPartOf": { "@id": /*[[${seoBaseUrl + '#website'}]]*/ "" },
+          "about": {
+            "@type": "Service",
+            "name": "Consulta pública de protocolo",
+            "serviceType": "Acompanhamento de solicitação de esgoto",
+            "provider": { "@id": /*[[${seoBaseUrl + '#organizacao'}]]*/ "" },
+            "areaServed": /*[[${seoLocal}]]*/ ""
+          },
+          "primaryImageOfPage": {
+            "@type": "ImageObject",
+            "url": /*[[${seoOgImage}]]*/ ""
+          },
+          "breadcrumb": { "@id": /*[[${seoCanonical + '#breadcrumb'}]]*/ "" }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": /*[[${seoCanonical + '#breadcrumb'}]]*/ "",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Início",
+              "item": /*[[${seoCanonical}]]*/ ""
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Consulta de protocolo",
+              "item": /*[[${seoCanonical}]]*/ ""
+            }
+          ]
+        },
+        {
+          "@type": "HowTo",
+          "name": "Como consultar o protocolo da solicitação no Sanea",
+          "description": "Veja o andamento da sua solicitação de esgoto informando o número do protocolo.",
+          "inLanguage": "pt-BR",
+          "totalTime": "PT1M",
+          "step": [
+            {
+              "@type": "HowToStep",
+              "position": 1,
+              "name": "Localize o protocolo",
+              "text": "Use o código recebido no registro da solicitação, no formato SAN-AAAA-XXXXXXXX."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 2,
+              "name": "Informe o protocolo",
+              "text": "Digite o protocolo no campo de consulta desta página."
+            },
+            {
+              "@type": "HowToStep",
+              "position": 3,
+              "name": "Veja o andamento",
+              "text": "Consulte status atual, histórico público e mensagens disponíveis da solicitação."
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Como consultar o andamento da solicitação?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": /*[[${'Em poucos passos você acompanha o protocolo da sua solicitação de esgoto no Sanea, serviço digital de atendimento em ' + seoLocal + '. 1) Localize o protocolo no padrão SAN-AAAA-XXXXXXXX. 2) Digite e consulte no campo da página. 3) Acompanhe status, histórico público e mensagens — sem login.'}]]*/ ""
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "O que é a consulta de protocolo do Sanea?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": /*[[${'É a página pública para acompanhar o andamento de solicitações de esgoto em ' + seoLocal + ', informando apenas o número do protocolo.'}]]*/ ""
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Preciso criar conta para consultar o protocolo?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Não. A consulta pública funciona sem login. Basta informar o protocolo da solicitação."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Quais informações aparecem na consulta?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Status atual, data de abertura, histórico público de andamento e mensagens públicas. Dados pessoais não são exibidos."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "O que fazer se o protocolo não for encontrado?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Confira se digitou o código corretamente, no formato SAN-AAAA-XXXXXXXX. Se o erro persistir, use o canal de atendimento com o comprovante do registro."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "A consulta de protocolo é gratuita?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Sim. Acompanhar a solicitação pelo protocolo no Sanea é gratuito e disponível online."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 </head>
 <body>
+<a class="skip-link" href="#conteudo-principal">Ir para o conteúdo</a>
 <div class="public-shell">
-    <header class="public-shell__top">
-        <a class="public-shell__brand" th:href="@{/consulta}" aria-label="Sanea">
-            <img th:src="@{/img/logo.webp}" alt="Sanea" width="40" height="40">
+    <header class="public-shell__top" role="banner">
+        <a class="public-shell__brand" th:href="@{/consulta}" aria-label="Sanea — página inicial da consulta de protocolo">
+            <img th:src="@{/img/logo.webp}" alt="Logotipo Sanea" width="40" height="40" decoding="async">
             <span>
                 <strong>Sanea</strong>
             </span>
         </a>
-        <nav class="public-shell__nav">
-            <a th:href="@{/login}">Entrar</a>
+        <nav class="public-shell__nav" aria-label="Acesso à conta">
+            <a class="btn btn-secondary btn-sm" th:href="@{/login}">Entrar</a>
             <a class="btn btn-secondary btn-sm" th:href="@{/cadastro}">Cadastre-se</a>
         </nav>
     </header>
 
-    <main class="public-shell__main">
-        <section class="consulta">
-            <div class="consulta__intro">
-                <p class="consulta__eyebrow">Acompanhamento público</p>
+    <main id="conteudo-principal" class="public-shell__main" role="main">
+        <article class="consulta">
+            <header class="consulta__intro">
                 <h1>Consulta de protocolo</h1>
-                <p>Informe o protocolo no formato <strong>SAN-AAAA-XXXXXXXX</strong> para ver o andamento, sem exibir dados pessoais.</p>
-            </div>
+                <p>
+                  Consulte o status e o histórico da solicitação pelo protocolo, sem exibir dados pessoais.
+                </p>
+            </header>
 
-            <section class="consulta__search surface">
-                <form method="post" th:action="@{/consulta}" class="consulta__form">
+            <section class="consulta__search surface" aria-labelledby="consulta-form-titulo">
+                <h2 id="consulta-form-titulo" class="sr-only-text">Buscar solicitação pelo protocolo</h2>
+                <form method="post" th:action="@{/consulta}" class="consulta__form" role="search" aria-label="Consulta de protocolo">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <div class="field consulta__protocolo">
-                        <label for="protocolo">Protocolo</label>
+                        <label for="protocolo">Protocolo da solicitação</label>
                         <input id="protocolo" name="protocolo" type="text"
                                th:value="${protocolo}"
                                placeholder="SAN-2026-K7QF9M2D"
-                               required autocomplete="off" spellcheck="false">
+                               required autocomplete="off" spellcheck="false"
+                               inputmode="text" enterkeyhint="search"
+                               aria-describedby="protocolo-ajuda">
                     </div>
                     <div class="consulta__actions">
-                        <button class="btn btn-primary" type="submit">Consultar</button>
+                        <button class="btn btn-primary" type="submit">Consultar andamento</button>
                     </div>
                     <div class="field consulta__captcha" th:if="${recaptchaEnabled}">
                         <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}"></div>
@@ -52,17 +254,17 @@
                 </form>
             </section>
 
-            <section class="consulta__empty surface" th:if="${naoEncontrado}">
+            <section class="consulta__empty surface" th:if="${naoEncontrado}" aria-live="polite">
                 <div class="consulta__empty-icon" aria-hidden="true">?</div>
                 <h2>Protocolo não encontrado</h2>
                 <p>Verifique o código informado. A resposta é a mesma para protocolos inválidos ou inexistentes.</p>
             </section>
 
-            <section class="consulta__result" th:if="${chamado != null}">
+            <section class="consulta__result" th:if="${chamado != null}" aria-labelledby="resultado-titulo">
                 <header class="consulta__result-head surface">
                     <div class="consulta__result-main">
-                        <p class="consulta__eyebrow">Resultado</p>
-                        <h2 th:text="${chamado.protocolo}">SAN-2026-XXXX</h2>
+                        <p class="consulta__eyebrow">Resultado da consulta</p>
+                        <h2 id="resultado-titulo" th:text="${chamado.protocolo}">SAN-2026-XXXX</h2>
                         <p class="consulta__tipo" th:text="${chamado.tipoNome}">Tipo</p>
                     </div>
                     <span class="badge" th:classappend="'badge-' + ${chamado.status.name()}" th:text="${chamado.statusRotulo}">Status</span>
@@ -84,23 +286,24 @@
                 </div>
 
                 <div class="consulta__panels">
-                    <article class="surface stack consulta__panel">
-                        <h3>Histórico público</h3>
+                    <section class="surface stack consulta__panel" aria-labelledby="historico-titulo">
+                        <h3 id="historico-titulo">Histórico público</h3>
                         <ol class="consulta-timeline" th:if="${!#lists.isEmpty(chamado.historico)}">
                             <li th:each="h, stat : ${chamado.historico}" th:classappend="${stat.last} ? 'is-current'">
                                 <div class="consulta-timeline__dot" aria-hidden="true"></div>
                                 <div class="consulta-timeline__body">
                                     <strong th:text="${h.statusNovo.rotulo}">Status</strong>
-                                    <time th:text="${#temporals.format(h.criadoEm, 'dd/MM/yyyy HH:mm', zoneId)}">data</time>
+                                    <time th:datetime="${h.criadoEm}"
+                                          th:text="${#temporals.format(h.criadoEm, 'dd/MM/yyyy HH:mm', zoneId)}">data</time>
                                     <p th:if="${h.observacao != null}" th:text="${h.observacao}"></p>
                                 </div>
                             </li>
                         </ol>
                         <div class="empty-state" th:if="${#lists.isEmpty(chamado.historico)}">Sem histórico público.</div>
-                    </article>
+                    </section>
 
-                    <article class="surface stack consulta__panel">
-                        <h3>Mensagens públicas</h3>
+                    <section class="surface stack consulta__panel" aria-labelledby="mensagens-titulo">
+                        <h3 id="mensagens-titulo">Mensagens públicas</h3>
                         <div class="empty-state" th:if="${#lists.isEmpty(chamado.mensagensPublicas)}">
                             Nenhuma mensagem pública até o momento.
                         </div>
@@ -108,16 +311,71 @@
                             <article class="consulta-message" th:each="m : ${chamado.mensagensPublicas}">
                                 <div class="consulta-message__meta">
                                     <span th:text="${m.perfilAutor}">Perfil</span>
-                                    <time th:text="${#temporals.format(m.criadoEm, 'dd/MM/yyyy HH:mm', zoneId)}">data</time>
+                                    <time th:datetime="${m.criadoEm}"
+                                          th:text="${#temporals.format(m.criadoEm, 'dd/MM/yyyy HH:mm', zoneId)}">data</time>
                                 </div>
                                 <p th:text="${m.corpo}">Mensagem</p>
                             </article>
                         </div>
-                    </article>
+                    </section>
                 </div>
             </section>
-        </section>
+
+            <section class="consulta-seo consulta-seo--faq" aria-labelledby="faq-titulo">
+                <h2 id="faq-titulo">Perguntas frequentes sobre a consulta de protocolo</h2>
+                <div class="consulta-faq">
+                    <details class="consulta-faq__item" open>
+                        <summary>Como consultar o andamento da solicitação?</summary>
+                        <p>
+                            Em poucos passos você acompanha o protocolo da sua solicitação de esgoto no Sanea,
+                            serviço digital de atendimento em <span th:text="${seoLocal}">Santos/SP</span>.
+                        </p>
+                        <ol class="consulta-seo__steps">
+                            <li>
+                                <h3>Localize o protocolo</h3>
+                                <p>O código é gerado no registro da solicitação, no padrão <strong>SAN-AAAA-XXXXXXXX</strong>.</p>
+                            </li>
+                            <li>
+                                <h3>Digite e consulte</h3>
+                                <p>Informe o protocolo no campo acima e confirme para ver o andamento atualizado.</p>
+                            </li>
+                            <li>
+                                <h3>Acompanhe o status</h3>
+                                <p>Veja status, histórico público e mensagens disponíveis — sem precisar fazer login.</p>
+                            </li>
+                        </ol>
+                    </details>
+                    <details class="consulta-faq__item">
+                        <summary>O que é a consulta de protocolo do Sanea?</summary>
+                        <p>
+                            É a forma pública de acompanhar solicitações de esgoto em
+                            <span th:text="${seoLocal}">Santos/SP</span>, usando apenas o número do protocolo.
+                        </p>
+                    </details>
+                    <details class="consulta-faq__item">
+                        <summary>Preciso criar conta para consultar?</summary>
+                        <p>Não. A consulta funciona sem cadastro. Basta informar o protocolo corretamente.</p>
+                    </details>
+                    <details class="consulta-faq__item">
+                        <summary>Quais informações são exibidas?</summary>
+                        <p>Status atual, data de abertura, histórico público e mensagens públicas. Dados pessoais não aparecem.</p>
+                    </details>
+                    <details class="consulta-faq__item">
+                        <summary>O protocolo não foi encontrado. O que faço?</summary>
+                        <p>
+                            Confira o código no formato SAN-AAAA-XXXXXXXX. Se estiver correto e o erro continuar,
+                            utilize o canal de atendimento com o comprovante do registro.
+                        </p>
+                    </details>
+                    <details class="consulta-faq__item">
+                        <summary>A consulta é gratuita?</summary>
+                        <p>Sim. Consultar o andamento da solicitação pelo protocolo no Sanea é gratuito.</p>
+                    </details>
+                </div>
+            </section>
+        </article>
     </main>
+
 </div>
 <th:block th:replace="~{fragments/pwa :: scripts}"></th:block>
 </body>

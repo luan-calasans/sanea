@@ -114,7 +114,7 @@ app:
     public-protocol-block-seconds: ${PUBLIC_PROTOCOL_RATE_BLOCK_SECONDS:300}
   login:
     max-attempts: ${LOGIN_MAX_ATTEMPTS:5}
-    lock-minutes: ${LOGIN_LOCK_MINUTES:15}
+    lock-minutes: ${LOGIN_LOCK_MINUTES:5}
   initial-users:
     cidadao:
       email: ${INITIAL_CIDADAO_EMAIL:}

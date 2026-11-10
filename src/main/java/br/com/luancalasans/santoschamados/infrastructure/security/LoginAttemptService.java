@@ -21,12 +21,9 @@ public class LoginAttemptService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isBlocked(String email, String ip) {
-        String normalized = normalize(email);
+    public boolean isBlocked(String ip) {
         return loginTentativaRepository
-                .findFirstByEmailNormalizadoAndIpAddressAndBloqueadoAteAfterOrderByCriadoEmDesc(
-                        normalized, ip, Instant.now()
-                )
+                .findFirstByIpAddressAndBloqueadoAteAfterOrderByCriadoEmDesc(ip, Instant.now())
                 .isPresent();
     }
 
@@ -40,28 +37,37 @@ public class LoginAttemptService {
     }
 
     @Transactional
-    public void registerFailure(String email, String ip) {
-        String normalized = normalize(email);
-        Instant desde = Instant.now().minus(
-                appProperties.getLogin().getLockMinutes(),
-                ChronoUnit.MINUTES
-        );
-        long falhas = loginTentativaRepository.contarFalhasRecentes(normalized, ip, desde) + 1;
+    public LoginAttemptResult registerFailure(String email, String ip) {
+        Instant agora = Instant.now();
+        int maxAttempts = appProperties.getLogin().getMaxAttempts();
+        int lockMinutes = appProperties.getLogin().getLockMinutes();
+
+        Instant desde = agora.minus(lockMinutes, ChronoUnit.MINUTES);
+        Instant ultimoBloqueio = loginTentativaRepository.findUltimoBloqueadoAtePorIp(ip).orElse(null);
+        if (ultimoBloqueio != null && ultimoBloqueio.isAfter(desde) && !ultimoBloqueio.isAfter(agora)) {
+            desde = ultimoBloqueio;
+        }
+
+        long falhas = loginTentativaRepository.contarFalhasRecentesPorIp(ip, desde) + 1;
+        boolean bloqueado = falhas >= maxAttempts;
 
         LoginTentativa tentativa = new LoginTentativa();
-        tentativa.setEmailNormalizado(normalized);
+        tentativa.setEmailNormalizado(normalize(email));
         tentativa.setIpAddress(ip);
         tentativa.setSucesso(false);
-        if (falhas >= appProperties.getLogin().getMaxAttempts()) {
-            tentativa.setBloqueadoAte(Instant.now().plus(
-                    appProperties.getLogin().getLockMinutes(),
-                    ChronoUnit.MINUTES
-            ));
+        if (bloqueado) {
+            tentativa.setBloqueadoAte(agora.plus(lockMinutes, ChronoUnit.MINUTES));
         }
         loginTentativaRepository.save(tentativa);
+
+        int restantes = (int) Math.max(0, maxAttempts - falhas);
+        return new LoginAttemptResult(falhas, restantes, bloqueado);
     }
 
     private String normalize(String email) {
         return email == null ? "" : email.trim().toLowerCase();
+    }
+
+    public record LoginAttemptResult(long falhas, int restantes, boolean bloqueado) {
     }
 }
